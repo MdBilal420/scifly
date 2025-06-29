@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 30%, #1a365d 60%, #2d3748 100%);
+    min-height: 100vh;
+    position: relative;
+    overflow-x: hidden;
+  }
+  
+  h1, h2, h3 {
+    font-family: 'Comic Neue', cursive;
+  }
+  
+  /* Space background with stars */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+      radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+      radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.8), transparent),
+      radial-gradient(1px 1px at 90% 40%, #fff, transparent),
+      radial-gradient(1px 1px at 50% 50%, rgba(255,255,255,0.6), transparent),
+      radial-gradient(2px 2px at 80% 10%, #fff, transparent),
+      radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.9), transparent),
+      radial-gradient(1px 1px at 60% 20%, #fff, transparent),
+      radial-gradient(2px 2px at 30% 90%, rgba(255,255,255,0.7), transparent),
+      radial-gradient(1px 1px at 70% 60%, #fff, transparent),
+      radial-gradient(1px 1px at 85% 80%, rgba(255,255,255,0.8), transparent);
+    background-size: 100% 100%;
+    animation: twinkle 8s infinite;
+    pointer-events: none;
+    z-index: -2;
+  }
+  
+  /* Moving cosmic dust */
+  body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 200%;
+    height: 200%;
+    background-image: 
+      radial-gradient(1px 1px at 25% 25%, rgba(147, 197, 253, 0.3), transparent),
+      radial-gradient(1px 1px at 75% 75%, rgba(167, 139, 250, 0.2), transparent),
+      radial-gradient(1px 1px at 15% 85%, rgba(59, 130, 246, 0.4), transparent),
+      radial-gradient(1px 1px at 85% 15%, rgba(139, 92, 246, 0.3), transparent);
+    animation: float-cosmic 20s infinite linear;
+    pointer-events: none;
+    z-index: -1;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-gradient-to-r from-primary-500 to-primary-600 text-white font-bold py-4 px-8 rounded-2xl shadow-lg transform transition-all duration-200 hover:scale-105 hover:shadow-xl active:scale-95;
+  }
+  
+  .btn-secondary {
+    @apply bg-gradient-to-r from-secondary-500 to-secondary-600 text-white font-bold py-3 px-6 rounded-xl shadow-md transform transition-all duration-200 hover:scale-105 hover:shadow-lg active:scale-95;
+  }
+  
+  .card {
+    @apply bg-white rounded-2xl shadow-lg p-6 transform transition-all duration-200 hover:shadow-xl;
+  }
+  
+  .chat-bubble {
+    @apply bg-white rounded-2xl p-4 shadow-md relative max-w-sm;
+  }
+  
+  .chat-bubble::before {
+    content: '';
+    position: absolute;
+    bottom: -8px;
+    left: 20px;
+    width: 0;
+    height: 0;
+    border-left: 8px solid transparent;
+    border-right: 8px solid transparent;
+    border-top: 8px solid white;
+  }
+  
+  .space-background {
+    @apply bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900 relative;
+  }
+  
+  .bg-gradient-radial {
+    background: radial-gradient(circle, var(--tw-gradient-stops));
+  }
+}
+
+@layer utilities {
+  @keyframes twinkle {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+  
+  @keyframes float-cosmic {
+    0% { transform: translateX(-50%) translateY(-50%); }
+    100% { transform: translateX(-60%) translateY(-40%); }
+  }
+  
+  @keyframes shooting-star {
+    0% { 
+      transform: translateX(-100px) translateY(100px);
+      opacity: 0;
+    }
+    10% { opacity: 1; }
+    90% { opacity: 1; }
+    100% { 
+      transform: translateX(calc(100vw + 100px)) translateY(-100px);
+      opacity: 0;
+    }
+  }
+} 
