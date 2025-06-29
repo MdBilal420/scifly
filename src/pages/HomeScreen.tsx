@@ -1,11 +1,14 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion } from 'framer-motion'
-import { useAppSelector } from '../hooks/redux'
+import { useAppSelector, useAppDispatch } from '../hooks/redux'
+import { setCurrentTopic } from '../features/topics/topicsSlice'
+import { Topic } from '../data/topics'
 import AvatarIcon from '../components/AvatarIcon'
 import SimbaMascot from '../components/SimbaMascot'
 import PrimaryButton from '../components/PrimaryButton'
 import ProgressBar from '../components/ProgressBar'
 import SpaceDecorations from '../components/SpaceDecorations'
+import TopicSelectionDialog from '../components/TopicSelectionDialog'
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void
@@ -13,6 +16,13 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   const { dailyProgress, dailyGoal, totalScore, streak } = useAppSelector((state) => state.progress)
+  const dispatch = useAppDispatch()
+  const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false)
+
+  const handleTopicSelect = (topic: Topic) => {
+    dispatch(setCurrentTopic(topic))
+    onNavigate('lesson')
+  }
 
   return (
     <div className="min-h-screen space-background p-4 relative">
@@ -33,7 +43,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
         </div>
         
         <div className="flex items-center gap-4">
-          <div className="bg-white/20 backdrop-blur rounded-2xl px-4 py-2">
+          <div className="bg-white/20 backdrop-blur rounded-2xl px-4 py-2 glass-3d tilt-3d">
             <div className="text-white text-center">
               <p className="text-xs opacity-80">Streak</p>
               <p className="font-bold">{streak} 🔥</p>
@@ -41,7 +51,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           </div>
           
           <motion.div
-            className="bg-secondary-500 rounded-full p-3 shadow-lg"
+            className="bg-secondary-500 rounded-full p-3 shadow-lg floating-3d"
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >
@@ -70,14 +80,14 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <p className="text-gray-700 font-medium">
-              Hi! I'm Simba! Welcome to SciFly! Ready to explore gravity? 🦁
+              Hi! I'm Simba! Welcome to SciFly! Ready to explore amazing science topics? 🦁
             </p>
           </motion.div>
         </motion.div>
 
         {/* Progress Section */}
         <motion.div
-          className="bg-white/95 backdrop-blur rounded-2xl p-6 mb-6 shadow-xl"
+          className="bg-white/95 backdrop-blur rounded-2xl p-6 mb-6 shadow-xl card-3d glass-3d"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
@@ -111,12 +121,12 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           transition={{ duration: 0.5, delay: 0.6 }}
         >
           <PrimaryButton
-            onClick={() => onNavigate('lesson')}
+            onClick={() => setIsTopicDialogOpen(true)}
             size="lg"
             className="w-full"
             icon="🔬"
           >
-            Learn About Gravity
+            Choose a Science Topic
           </PrimaryButton>
         </motion.div>
 
@@ -128,7 +138,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           transition={{ duration: 0.5, delay: 0.8 }}
         >
           <motion.button
-            className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg text-center"
+            className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg text-center tilt-3d glass-3d"
             onClick={() => onNavigate('quiz')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -138,7 +148,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           </motion.button>
 
           <motion.button
-            className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg text-center"
+            className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg text-center tilt-3d glass-3d"
             onClick={() => onNavigate('chat')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -148,7 +158,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           </motion.button>
 
           <motion.button
-            className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg text-center"
+            className="bg-white/90 backdrop-blur rounded-2xl p-4 shadow-lg text-center tilt-3d glass-3d"
             onClick={() => onNavigate('achievements')}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
@@ -158,6 +168,13 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           </motion.button>
         </motion.div>
       </div>
+
+      {/* Topic Selection Dialog */}
+      <TopicSelectionDialog
+        isOpen={isTopicDialogOpen}
+        onClose={() => setIsTopicDialogOpen(false)}
+        onTopicSelect={handleTopicSelect}
+      />
     </div>
   )
 }

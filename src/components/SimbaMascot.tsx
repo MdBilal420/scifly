@@ -28,7 +28,7 @@ const SimbaMascot: React.FC<SimbaMascotProps> = ({ size = 'md', animate = true, 
 
   return (
     <motion.div
-      className={`${sizeClasses[size]} ${className} relative`}
+      className={`${sizeClasses[size]} ${className} relative mascot-3d floating-3d`}
       {...animations}
     >
       {/* Lion Head */}

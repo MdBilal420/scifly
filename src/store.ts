@@ -3,6 +3,7 @@ import progressReducer from './features/progress/progressSlice'
 import quizReducer from './features/quiz/quizSlice'
 import chatReducer from './features/chat/chatSlice'
 import achievementReducer from './features/achievements/achievementSlice'
+import topicsReducer from './features/topics/topicsSlice'
 
 export const store = configureStore({
   reducer: {
@@ -10,6 +11,7 @@ export const store = configureStore({
     quiz: quizReducer,
     chat: chatReducer,
     achievements: achievementReducer,
+    topics: topicsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -6,7 +6,7 @@ const SpaceDecorations: React.FC = () => {
     <div className="fixed inset-0 pointer-events-none overflow-hidden z-0">
       {/* Planets */}
       <motion.div
-        className="absolute top-20 right-10 w-8 h-8 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg"
+        className="absolute top-20 right-10 w-8 h-8 bg-gradient-to-br from-red-400 to-red-600 rounded-full shadow-lg floating-3d"
         animate={{ 
           rotate: 360,
           y: [0, -20, 0]
@@ -14,6 +14,10 @@ const SpaceDecorations: React.FC = () => {
         transition={{ 
           rotate: { duration: 30, repeat: Infinity, ease: "linear" },
           y: { duration: 6, repeat: Infinity, ease: "easeInOut" }
+        }}
+        style={{ 
+          transformStyle: 'preserve-3d',
+          boxShadow: '0 10px 25px rgba(220, 38, 127, 0.3), inset 0 2px 4px rgba(255, 255, 255, 0.2)' 
         }}
       >
         {/* Mars-like planet */}

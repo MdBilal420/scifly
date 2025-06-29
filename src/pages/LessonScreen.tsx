@@ -1,54 +1,84 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useAppDispatch } from '../hooks/redux'
+import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { updateLessonProgress } from '../features/progress/progressSlice'
+import { generateLessonContent } from '../features/topics/topicsSlice'
 import SimbaMascot from '../components/SimbaMascot'
 import PrimaryButton from '../components/PrimaryButton'
 import ProgressBar from '../components/ProgressBar'
+import DynamicBackground from '../components/DynamicBackground'
 
 interface LessonScreenProps {
   onNavigate: (screen: string) => void
 }
 
-const lessonContent = [
-  {
-    id: 1,
-    title: "What is Gravity?",
-    content: "Gravity is an invisible force that pulls everything toward Earth! It's what keeps us on the ground instead of floating away into space.",
-    tip: "Try dropping a ball and a feather - which falls faster?",
-    interactive: "tap-to-reveal",
-    image: "🌍"
-  },
-  {
-    id: 2,
-    title: "How Does Gravity Work?",
-    content: "Everything with mass (weight) attracts everything else. Earth is really big and heavy, so it pulls everything toward its center!",
-    tip: "The bigger and heavier something is, the stronger its gravity!",
-    interactive: "drag-to-learn",
-    image: "⚖️"
-  },
-  {
-    id: 3,
-    title: "Gravity in Space",
-    content: "In space, astronauts float because they're falling around Earth at the same speed they're moving forward. It's like being on a really fast roller coaster!",
-    tip: "Astronauts aren't really weightless - they're just falling!",
-    interactive: "animation",
-    image: "🚀"
-  },
-  {
-    id: 4,
-    title: "Gravity Fun Facts",
-    content: "Did you know? If you weigh 100 pounds on Earth, you'd weigh only 38 pounds on Mars and 17 pounds on the Moon!",
-    tip: "You've learned so much about gravity! Great job! 🎉",
-    interactive: "celebration",
-    image: "🌙"
-  }
-]
+
 
 const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const [currentSection, setCurrentSection] = useState(0)
   const [isRevealed, setIsRevealed] = useState(false)
   const dispatch = useAppDispatch()
+  
+  const { currentTopic, lessonContent, isGeneratingContent, contentError } = useAppSelector((state) => state.topics)
+
+  useEffect(() => {
+    if (currentTopic && lessonContent.length === 0 && !isGeneratingContent) {
+      dispatch(generateLessonContent(currentTopic))
+    }
+  }, [currentTopic, lessonContent.length, isGeneratingContent, dispatch])
+
+  // Show loading or redirect if no topic selected
+  if (!currentTopic) {
+    onNavigate('topics')
+    return null
+  }
+
+  // Show loading state while generating content
+  if (isGeneratingContent || lessonContent.length === 0) {
+    return (
+      <DynamicBackground theme={currentTopic.backgroundTheme}>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="text-center">
+            <SimbaMascot size="lg" animate={true} />
+            <motion.div
+              className="mt-4 text-white text-xl font-comic"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Preparing your {currentTopic.title} lesson... 🦁
+            </motion.div>
+          </div>
+        </div>
+      </DynamicBackground>
+    )
+  }
+
+  // Show error state if content generation failed
+  if (contentError) {
+    return (
+      <DynamicBackground theme={currentTopic.backgroundTheme}>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="text-center bg-white/90 backdrop-blur rounded-3xl p-6 max-w-md">
+            <div className="text-6xl mb-4">😔</div>
+            <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
+            <p className="text-gray-600 mb-4">I couldn't generate the lesson content. Let's try again!</p>
+            <PrimaryButton
+              onClick={() => dispatch(generateLessonContent(currentTopic))}
+              className="w-full mb-2"
+            >
+              Try Again
+            </PrimaryButton>
+            <button
+              onClick={() => onNavigate('topics')}
+              className="text-gray-500 text-sm underline"
+            >
+              Choose Different Topic
+            </button>
+          </div>
+        </div>
+      </DynamicBackground>
+    )
+  }
 
   const currentContent = lessonContent[currentSection]
   const progress = ((currentSection + 1) / lessonContent.length) * 100
@@ -57,9 +87,9 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
     if (currentSection < lessonContent.length - 1) {
       setCurrentSection(currentSection + 1)
       setIsRevealed(false)
-      dispatch(updateLessonProgress({ lessonId: 'gravity', progress: progress + 25 }))
+      dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: progress + (100 / lessonContent.length) }))
     } else {
-      dispatch(updateLessonProgress({ lessonId: 'gravity', progress: 100 }))
+      dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: 100 }))
       onNavigate('home')
     }
   }
@@ -69,7 +99,8 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="min-h-screen space-background p-4">
+    <DynamicBackground theme={currentTopic.backgroundTheme}>
+      <div className="min-h-screen p-4">
       {/* Header */}
       <motion.header
         className="flex items-center justify-between mb-6"
@@ -77,7 +108,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
         animate={{ opacity: 1, y: 0 }}
       >
         <motion.button
-          className="bg-white/20 backdrop-blur rounded-full p-3"
+          className="bg-white/20 backdrop-blur rounded-full p-3 tilt-3d glass-3d"
           onClick={() => onNavigate('home')}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
@@ -94,7 +125,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
           />
         </div>
         
-        <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2">
+        <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2 glass-3d tilt-3d">
           <span className="text-white font-bold text-sm">
             {currentSection + 1}/{lessonContent.length}
           </span>
@@ -106,7 +137,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSection}
-            className="bg-white/95 backdrop-blur rounded-3xl p-6 mb-6 shadow-xl"
+            className="bg-white/95 backdrop-blur rounded-3xl p-6 mb-6 shadow-xl card-3d glass-3d"
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
@@ -140,7 +171,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
 
             {/* Interactive Zone */}
             <motion.div
-              className={`p-4 rounded-2xl mb-4 cursor-pointer transition-all duration-300 ${
+              className={`p-4 rounded-2xl mb-4 cursor-pointer transition-all duration-300 tilt-3d ${
                 isRevealed ? 'bg-success-100 border-2 border-success-300' : 'bg-gray-100 border-2 border-dashed border-gray-300'
               }`}
               onClick={handleInteraction}
@@ -195,6 +226,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
         </motion.div>
       </div>
     </div>
+    </DynamicBackground>
   )
 }
 

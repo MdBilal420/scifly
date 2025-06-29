@@ -24,11 +24,11 @@ const AchievementBadge: React.FC<AchievementBadgeProps> = ({
 
   return (
     <motion.div
-      className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 ${
+      className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 achievement-badge-3d ${
         unlocked 
           ? 'bg-gradient-to-br from-secondary-50 to-secondary-100 border-secondary-300 shadow-lg' 
           : 'bg-gray-100 border-gray-300'
-      }`}
+      } ${unlocked ? 'pulse-3d' : ''}`}
       onClick={onClick}
       whileHover={{ scale: 1.05 }}
       whileTap={{ scale: 0.95 }}

@@ -21,7 +21,7 @@ const QuizCard: React.FC<QuizCardProps> = ({
   disabled = false
 }) => {
   const getOptionStyle = (index: number) => {
-    let baseClasses = 'w-full p-4 rounded-xl border-2 text-left font-medium transition-all duration-200 cursor-pointer'
+    let baseClasses = 'w-full p-4 rounded-xl border-2 text-left font-medium transition-all duration-300 cursor-pointer tilt-3d'
     
     if (disabled) {
       baseClasses += ' cursor-not-allowed'
@@ -58,7 +58,7 @@ const QuizCard: React.FC<QuizCardProps> = ({
 
   return (
     <motion.div
-      className="card w-full max-w-2xl mx-auto"
+      className="card w-full max-w-2xl mx-auto quiz-card-3d"
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ duration: 0.3 }}

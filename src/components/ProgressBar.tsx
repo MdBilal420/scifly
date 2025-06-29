@@ -48,7 +48,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
         </div>
       )}
       
-      <div className={`w-full bg-gray-200 rounded-full ${sizeClasses[size]} overflow-hidden`}>
+      <div className={`w-full bg-gray-200 rounded-full ${sizeClasses[size]} overflow-hidden progress-3d`}>
         <motion.div
           className={`${colorClasses[color]} ${sizeClasses[size]} rounded-full relative`}
           initial={animate ? { width: 0 } : { width: `${percentage}%` }}

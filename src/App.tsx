@@ -9,7 +9,7 @@ import AchievementsScreen from './pages/AchievementsScreen'
 
 type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements'
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
 
   const handleNavigate = (screen: string) => {
@@ -34,10 +34,16 @@ const App: React.FC = () => {
   }
 
   return (
+    <div className="App">
+      {renderScreen()}
+    </div>
+  )
+}
+
+const App: React.FC = () => {
+  return (
     <Provider store={store}>
-      <div className="App">
-        {renderScreen()}
-      </div>
+      <AppContent />
     </Provider>
   )
 }
