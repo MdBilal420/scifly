@@ -1,0 +1,18 @@
+node_modules/
+/node_modules/
+/.
+.DS_Store
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Cache files
+.eslintcache
+**/cache/
+**/.cache/
+*.pack
+*.pack.old
+node_modules/.cache/
+node_modules/.cache/**/*
