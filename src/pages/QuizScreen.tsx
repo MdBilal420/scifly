@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppSelector, useAppDispatch } from '../hooks/redux'
-import { startQuiz, answerQuestion, nextQuestion, resetQuiz } from '../features/quiz/quizSlice'
+import { answerQuestion, nextQuestion, resetQuiz } from '../features/quiz/quizSlice'
 import { unlockAchievement } from '../features/achievements/achievementSlice'
 import { generateQuizQuestions } from '../features/topics/topicsSlice'
 import QuizCard from '../components/QuizCard'
@@ -24,6 +24,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [isQuizComplete, setIsQuizComplete] = useState(false)
+  const { currentUser } = useAppSelector((state) => state.user)
 
   useEffect(() => {
     if (!currentTopic) {
@@ -118,8 +119,11 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
     } else {
       // Quiz completed
       setIsQuizComplete(true)
-      if (score === quizQuestions.length) {
-        dispatch(unlockAchievement('quiz-master'))
+      if (score === quizQuestions.length && currentUser) {
+        dispatch(unlockAchievement({
+          userId: currentUser.id,
+          achievementKey: 'quiz-master'
+        }))
       }
     }
   }
