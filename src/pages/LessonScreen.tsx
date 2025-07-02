@@ -12,13 +12,12 @@ interface LessonScreenProps {
   onNavigate: (screen: string) => void
 }
 
-
-
 const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const [currentSection, setCurrentSection] = useState(0)
   const dispatch = useAppDispatch()
   
   const { currentTopic, lessonContent, isGeneratingContent, contentError } = useAppSelector((state) => state.topics)
+  const { currentUser } = useAppSelector((state) => state.user)
 
   useEffect(() => {
     if (currentTopic && lessonContent.length === 0 && !isGeneratingContent) {
@@ -83,11 +82,26 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const progress = ((currentSection + 1) / lessonContent.length) * 100
 
   const handleNext = () => {
+    if (!currentUser) return
+
     if (currentSection < lessonContent.length - 1) {
       setCurrentSection(currentSection + 1)
-      dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: progress + (100 / lessonContent.length) }))
+      dispatch(updateLessonProgress({ 
+        userId: currentUser.id, 
+        lessonId: currentTopic.id, 
+        progressData: { 
+          progress_percentage: progress + (100 / lessonContent.length) 
+        } 
+      }))
     } else {
-      dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: 100 }))
+      dispatch(updateLessonProgress({ 
+        userId: currentUser.id, 
+        lessonId: currentTopic.id, 
+        progressData: { 
+          progress_percentage: 100,
+          completed: true 
+        } 
+      }))
       onNavigate('home')
     }
   }
@@ -178,8 +192,6 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
             </motion.div>
           </motion.div>
         </AnimatePresence>
-
-
 
         {/* Nova's Tip */}
         <motion.div

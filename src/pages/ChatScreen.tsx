@@ -14,6 +14,8 @@ interface ChatScreenProps {
 const ChatScreen: React.FC<ChatScreenProps> = ({ onNavigate }) => {
   const dispatch = useAppDispatch()
   const { messages, isTyping, suggestedQuestions, isLoading } = useAppSelector((state) => state.chat)
+  const { currentUser } = useAppSelector((state) => state.user)
+  const { currentTopic } = useAppSelector((state) => state.topics)
   const [inputText, setInputText] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -23,11 +25,19 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ onNavigate }) => {
 
   const handleSendMessage = (message?: string) => {
     const textToSend = message || inputText.trim()
-    if (!textToSend) return
+    if (!textToSend || !currentUser) return
 
     dispatch(addUserMessage(textToSend))
-    dispatch(sendMessage(textToSend))
-    dispatch(updateAchievementProgress({ achievementId: 'curious-mind', progress: 1 }))
+    dispatch(sendMessage({ 
+      userId: currentUser.id, 
+      message: textToSend, 
+      topicId: currentTopic?.id 
+    }))
+    dispatch(updateAchievementProgress({ 
+      userId: currentUser.id, 
+      achievementKey: 'curious-mind', 
+      progress: 1 
+    }))
     
     setInputText('')
   }
