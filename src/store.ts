@@ -4,6 +4,7 @@ import quizReducer from './features/quiz/quizSlice'
 import chatReducer from './features/chat/chatSlice'
 import achievementReducer from './features/achievements/achievementSlice'
 import topicsReducer from './features/topics/topicsSlice'
+import userReducer from './features/user/userSlice'
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     chat: chatReducer,
     achievements: achievementReducer,
     topics: topicsReducer,
+    user: userReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

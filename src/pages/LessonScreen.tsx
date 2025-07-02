@@ -16,7 +16,6 @@ interface LessonScreenProps {
 
 const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const [currentSection, setCurrentSection] = useState(0)
-  const [isRevealed, setIsRevealed] = useState(false)
   const dispatch = useAppDispatch()
   
   const { currentTopic, lessonContent, isGeneratingContent, contentError } = useAppSelector((state) => state.topics)
@@ -86,16 +85,11 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const handleNext = () => {
     if (currentSection < lessonContent.length - 1) {
       setCurrentSection(currentSection + 1)
-      setIsRevealed(false)
       dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: progress + (100 / lessonContent.length) }))
     } else {
       dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: 100 }))
       onNavigate('home')
     }
-  }
-
-  const handleInteraction = () => {
-    setIsRevealed(true)
   }
 
   return (
@@ -153,12 +147,9 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
               {currentContent.title}
             </motion.h1>
 
-            {/* Interactive Image/Animation */}
+            {/* Interactive Image */}
             <motion.div
-              className="text-6xl text-center mb-6 cursor-pointer"
-              onClick={handleInteraction}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
+              className="text-6xl text-center mb-6"
               animate={
                 currentContent.interactive === 'animation' 
                   ? { rotate: [0, 5, -5, 0], y: [0, -10, 0] }
@@ -169,31 +160,26 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
               {currentContent.image}
             </motion.div>
 
-            {/* Interactive Zone */}
+            {/* Science Content */}
             <motion.div
-              className={`p-4 rounded-2xl mb-4 cursor-pointer transition-all duration-300 tilt-3d ${
-                isRevealed ? 'bg-success-100 border-2 border-success-300' : 'bg-gray-100 border-2 border-dashed border-gray-300'
-              }`}
-              onClick={handleInteraction}
-              whileHover={{ scale: 1.02 }}
+              className="p-4 rounded-2xl mb-4 bg-success-100 border-2 border-success-300 tilt-3d"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
             >
-              {isRevealed ? (
-                <motion.p
-                  className="text-gray-700 leading-relaxed"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {currentContent.content}
-                </motion.p>
-              ) : (
-                <p className="text-gray-500 text-center">
-                  🔍 Tap to reveal the science!
-                </p>
-              )}
+              <motion.p
+                className="text-gray-700 leading-relaxed"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.5, duration: 0.5 }}
+              >
+                {currentContent.content}
+              </motion.p>
             </motion.div>
           </motion.div>
         </AnimatePresence>
+
+
 
         {/* Nova's Tip */}
         <motion.div
@@ -216,7 +202,6 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
         >
           <PrimaryButton
             onClick={handleNext}
-            disabled={!isRevealed && currentContent.interactive !== 'celebration'}
             className="w-full"
             variant={currentSection === lessonContent.length - 1 ? 'success' : 'primary'}
             icon={currentSection === lessonContent.length - 1 ? '🎉' : '→'}

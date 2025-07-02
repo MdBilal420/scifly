@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSelector, useAppDispatch } from '../hooks/redux'
 import { setCurrentTopic } from '../features/topics/topicsSlice'
+import { resetUser } from '../features/user/userSlice'
 import { Topic } from '../data/topics'
 import AvatarIcon from '../components/AvatarIcon'
 import SimbaMascot from '../components/SimbaMascot'
@@ -16,6 +17,7 @@ interface HomeScreenProps {
 
 const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   const { dailyProgress, dailyGoal, totalScore, streak } = useAppSelector((state) => state.progress)
+  const { currentUser } = useAppSelector((state) => state.user)
   const dispatch = useAppDispatch()
   const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false)
 
@@ -35,14 +37,30 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
         transition={{ duration: 0.5 }}
       >
         <div className="flex items-center gap-3">
-          <AvatarIcon size="lg" />
+          <div className="text-4xl">{currentUser?.avatar || '👤'}</div>
           <div>
-            <h1 className="text-white font-comic text-2xl font-bold">SciFly 🚀</h1>
-            <p className="text-white/80 text-sm">Your science adventure starts here!</p>
+            <h1 className="text-white font-comic text-2xl font-bold">
+              {currentUser ? `Hi, ${currentUser.name}! 🚀` : 'SciFly 🚀'}
+            </h1>
+            <p className="text-white/80 text-sm">
+              {currentUser 
+                ? `${currentUser.learningSpeed <= 2 ? 'Steady explorer' : currentUser.learningSpeed >= 4 ? 'Quick learner' : 'Balanced student'} • Ready to learn?`
+                : 'Your science adventure starts here!'
+              }
+            </p>
           </div>
         </div>
         
         <div className="flex items-center gap-4">
+          {currentUser && (
+            <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2 glass-3d tilt-3d">
+              <div className="text-white text-center">
+                <p className="text-xs opacity-80">Learning Speed</p>
+                <p className="font-bold">{currentUser.learningSpeed}/5 {currentUser.avatar}</p>
+              </div>
+            </div>
+          )}
+          
           <div className="bg-white/20 backdrop-blur rounded-2xl px-4 py-2 glass-3d tilt-3d">
             <div className="text-white text-center">
               <p className="text-xs opacity-80">Streak</p>
@@ -57,6 +75,21 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           >
             <span className="text-white text-xl">⭐</span>
           </motion.div>
+          
+          {currentUser && (
+            <motion.button
+              className="bg-white/20 backdrop-blur rounded-full p-2 glass-3d"
+              onClick={() => {
+                if (window.confirm(`Reset your profile? You'll need to set up your learning preferences again.`)) {
+                  dispatch(resetUser())
+                }
+              }}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className="text-white text-sm">⚙️</span>
+            </motion.button>
+          )}
         </div>
       </motion.header>
 
@@ -80,7 +113,10 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
             transition={{ duration: 0.5, delay: 0.8 }}
           >
             <p className="text-gray-700 font-medium">
-              Hi! I'm Simba! Welcome to SciFly! Ready to explore amazing science topics? 🦁
+              {currentUser 
+                ? `Hey ${currentUser.name}! I've prepared lessons perfect for a ${currentUser.learningSpeed <= 2 ? 'careful explorer like you! We\'ll take our time.' : currentUser.learningSpeed >= 4 ? 'quick thinker like you! Let\'s move fast!' : 'balanced learner like you! Just the right pace.'} Ready? 🦁`
+                : 'Hi! I\'m Simba! Welcome to SciFly! Ready to explore amazing science topics? 🦁'
+              }
             </p>
           </motion.div>
         </motion.div>

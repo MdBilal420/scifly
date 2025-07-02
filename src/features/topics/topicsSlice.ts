@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { Topic } from '../../data/topics'
 import { LessonContent, QuizQuestion } from '../../services/groqAPI'
 import groqAPI from '../../services/groqAPI'
+import { RootState } from '../../store'
 
 interface TopicsState {
   currentTopic: Topic | null
@@ -26,9 +27,11 @@ const initialState: TopicsState = {
 // Async thunks for API calls
 export const generateLessonContent = createAsyncThunk(
   'topics/generateLessonContent',
-  async (topic: Topic, { rejectWithValue }) => {
+  async (topic: Topic, { rejectWithValue, getState }) => {
     try {
-      const content = await groqAPI.generateLessonContent(topic)
+      const state = getState() as RootState
+      const userProfile = state.user.currentUser
+      const content = await groqAPI.generateLessonContent(topic, userProfile || undefined)
       return content
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'Failed to generate lesson content')

@@ -1,4 +1,5 @@
 import { Topic } from '../data/topics'
+import { UserProfile } from '../features/user/userSlice'
 
 // Groq API configuration
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
@@ -31,7 +32,7 @@ class GroqAPIService {
         },
         body: JSON.stringify({
           messages,
-          model: 'mixtral-8x7b-32768', // Fast and capable model
+          model: 'llama-3.1-8b-instant', // Fast and capable model
           temperature: 0.7,
           max_tokens: 1000,
           top_p: 1,
@@ -51,21 +52,56 @@ class GroqAPIService {
     }
   }
 
-  async generateLessonContent(topic: Topic): Promise<LessonContent[]> {
-    const prompt = `Create 4 educational lesson sections for Grade 5 students about "${topic.title}". 
-    Each section should be age-appropriate, engaging, and interactive.
+  async generateLessonContent(topic: Topic, userProfile?: UserProfile): Promise<LessonContent[]> {
+    // Determine content style based on user's learning speed
+    let contentStyle = 'balanced with 2-3 sentences'
+    let tipStyle = 'encouraging'
+    let exampleCount = 2
+    
+    if (userProfile) {
+      const { preferences } = userProfile
+      
+      switch (preferences.explanationDetail) {
+        case 'comprehensive':
+          contentStyle = 'detailed with 4-5 sentences and multiple examples'
+          tipStyle = 'detailed and thorough'
+          exampleCount = preferences.exampleCount
+          break
+        case 'detailed':
+          contentStyle = 'well-explained with 3-4 sentences and good examples'
+          tipStyle = 'helpful and informative'
+          exampleCount = preferences.exampleCount
+          break
+        case 'basic':
+          contentStyle = 'concise with 1-2 sentences and clear points'
+          tipStyle = 'quick and encouraging'
+          exampleCount = preferences.exampleCount
+          break
+      }
+    }
+
+    const prompt = `Create 4 educational lesson sections for Grade 5 students about "${topic.title}".
+    
+    USER LEARNING PROFILE:
+    ${userProfile ? `- Name: ${userProfile.name}` : '- Default student'}
+    ${userProfile ? `- Learning Speed: ${userProfile.learningSpeed}/5 (${userProfile.learningSpeed <= 2 ? 'methodical learner' : userProfile.learningSpeed >= 4 ? 'quick learner' : 'balanced learner'})` : ''}
+    ${userProfile ? `- Content Style: ${contentStyle}` : ''}
+    ${userProfile ? `- Examples Needed: ${exampleCount}` : ''}
+    
+    Adapt the content complexity and detail level to match this learning profile.
     
     Format as JSON array with these fields for each section:
     - id: number (1-4)
     - title: string (engaging title)
-    - content: string (simple explanation, 2-3 sentences)
-    - tip: string (fun fact or helpful tip from Simba the lion mascot)
+    - content: string (${contentStyle})
+    - tip: string (${tipStyle} tip from Simba the lion mascot)
     - interactive: string (one of: "tap-to-reveal", "drag-to-learn", "animation", "celebration")
     - image: string (single emoji representing the concept)
     
     Key learning points to cover: ${topic.keyLearningPoints.join(', ')}
     
-    Make it fun, simple, and encourage curiosity!`
+    ${userProfile?.name ? `Address the student as ${userProfile.name} occasionally in tips.` : ''}
+    Make it fun, engaging, and perfectly matched to the learning style!`
 
     try {
       const response = await this.makeRequest([
@@ -85,7 +121,7 @@ class GroqAPIService {
     } catch (error) {
       console.error('Failed to generate lesson content:', error)
       // Return fallback content
-      return this.getFallbackLessonContent(topic)
+      return this.getFallbackLessonContent(topic, userProfile)
     }
   }
 
@@ -149,13 +185,17 @@ class GroqAPIService {
     }
   }
 
-  private getFallbackLessonContent(topic: Topic): LessonContent[] {
+  private getFallbackLessonContent(topic: Topic, userProfile?: UserProfile): LessonContent[] {
+    const userName = userProfile?.name || 'young scientist'
+    const contentLength = userProfile?.preferences.explanationDetail === 'comprehensive' ? 'detailed explanation' : 
+                         userProfile?.preferences.explanationDetail === 'basic' ? 'simple overview' : 'good explanation'
+    
     return [
       {
         id: 1,
         title: `What is ${topic.title}?`,
-        content: `${topic.description} Let's explore this amazing topic together!`,
-        tip: "Great question! Let's discover the basics first! 🦁",
+        content: `${topic.description} Let's explore this amazing topic together${userProfile?.name ? `, ${userProfile.name}` : ''}!`,
+        tip: `Great question${userProfile?.name ? `, ${userProfile.name}` : ''}! Let's discover the basics first! 🦁`,
         interactive: "tap-to-reveal",
         image: topic.icon
       },
