@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSelector, useAppDispatch } from '../hooks/redux'
 import { setCurrentTopic } from '../features/topics/topicsSlice'
-import { resetUser } from '../features/user/userSlice'
+import { signOutUser } from '../features/user/userSlice'
 import { Topic } from '../data/topics'
 import AvatarIcon from '../components/AvatarIcon'
 import SimbaMascot from '../components/SimbaMascot'
@@ -10,6 +10,7 @@ import PrimaryButton from '../components/PrimaryButton'
 import ProgressBar from '../components/ProgressBar'
 import SpaceDecorations from '../components/SpaceDecorations'
 import TopicSelectionDialog from '../components/TopicSelectionDialog'
+import UserMenu from '../components/UserMenu'
 
 interface HomeScreenProps {
   onNavigate: (screen: string) => void
@@ -76,20 +77,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
             <span className="text-white text-xl">⭐</span>
           </motion.div>
           
-          {currentUser && (
-            <motion.button
-              className="bg-white/20 backdrop-blur rounded-full p-2 glass-3d"
-              onClick={() => {
-                if (window.confirm(`Reset your profile? You'll need to set up your learning preferences again.`)) {
-                  dispatch(resetUser())
-                }
-              }}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              <span className="text-white text-sm">⚙️</span>
-            </motion.button>
-          )}
+          {/* User Menu with Logout */}
+          <UserMenu />
         </div>
       </motion.header>
 

@@ -22,34 +22,83 @@ export interface QuizQuestion {
 }
 
 class GroqAPIService {
-  private async makeRequest(messages: any[]) {
-    try {
-      const response = await fetch(GROQ_API_URL, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${GROQ_API_KEY}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          messages,
-          model: 'llama-3.1-8b-instant', // Fast and capable model
-          temperature: 0.7,
-          max_tokens: 1000,
-          top_p: 1,
-          stream: false
+  private async makeRequest(messages: any[], maxRetries: number = 3): Promise<string> {
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+      try {
+        console.log(`🤖 Groq API attempt ${attempt}/${maxRetries}`)
+        
+        // Create AbortController for timeout handling
+        const controller = new AbortController()
+        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+        
+        const response = await fetch(GROQ_API_URL, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${GROQ_API_KEY}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages,
+            model: 'llama-3.1-8b-instant', // Fast and capable model
+            temperature: 0.7,
+            max_tokens: 800, // Reduced from 1000 to minimize timeout risk
+            top_p: 1,
+            stream: false
+          }),
+          signal: controller.signal
         })
-      })
 
-      if (!response.ok) {
-        throw new Error(`Groq API error: ${response.status}`)
+        clearTimeout(timeoutId)
+
+        if (!response.ok) {
+          const errorText = await response.text()
+          
+          // Handle specific error codes
+          if (response.status === 524 || response.status === 504) {
+            throw new Error(`TIMEOUT: Gateway timeout (${response.status})`)
+          } else if (response.status === 429) {
+            throw new Error(`RATE_LIMIT: Too many requests (${response.status})`)
+          } else if (response.status >= 500) {
+            throw new Error(`SERVER_ERROR: Groq server error (${response.status})`)
+          } else {
+            throw new Error(`Groq API error: ${response.status} - ${errorText}`)
+          }
+        }
+
+        const data = await response.json()
+        
+        if (!data.choices || !data.choices[0] || !data.choices[0].message) {
+          throw new Error('Invalid response format from Groq API')
+        }
+        
+        console.log('✅ Groq API request successful')
+        return data.choices[0].message.content
+        
+      } catch (error: any) {
+        console.warn(`❌ Groq API attempt ${attempt} failed:`, error.message)
+        
+        // Don't retry for client errors (400-499, except 429)
+        if (error.message.includes('Groq API error:') && 
+            !error.message.includes('TIMEOUT') && 
+            !error.message.includes('RATE_LIMIT') && 
+            !error.message.includes('SERVER_ERROR')) {
+          throw error
+        }
+        
+        // If this was the last attempt, throw the error
+        if (attempt === maxRetries) {
+          console.error('🚨 All Groq API attempts failed')
+          throw error
+        }
+        
+        // Exponential backoff: wait longer between retries
+        const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000) // 1s, 2s, 4s max
+        console.log(`⏳ Retrying in ${delay/1000}s...`)
+        await new Promise(resolve => setTimeout(resolve, delay))
       }
-
-      const data = await response.json()
-      return data.choices[0].message.content
-    } catch (error) {
-      console.error('Groq API request failed:', error)
-      throw error
     }
+    
+    throw new Error('All retry attempts exhausted')
   }
 
   async generateLessonContent(topic: Topic, userProfile?: UserProfile): Promise<LessonContent[]> {
@@ -80,28 +129,19 @@ class GroqAPIService {
       }
     }
 
-    const prompt = `Create 4 educational lesson sections for Grade 5 students about "${topic.title}".
-    
-    USER LEARNING PROFILE:
-    ${userProfile ? `- Name: ${userProfile.name}` : '- Default student'}
-    ${userProfile ? `- Learning Speed: ${userProfile.learningSpeed}/5 (${userProfile.learningSpeed <= 2 ? 'methodical learner' : userProfile.learningSpeed >= 4 ? 'quick learner' : 'balanced learner'})` : ''}
-    ${userProfile ? `- Content Style: ${contentStyle}` : ''}
-    ${userProfile ? `- Examples Needed: ${exampleCount}` : ''}
-    
-    Adapt the content complexity and detail level to match this learning profile.
-    
-    Format as JSON array with these fields for each section:
-    - id: number (1-4)
-    - title: string (engaging title)
-    - content: string (${contentStyle})
-    - tip: string (${tipStyle} tip from Simba the lion mascot)
-    - interactive: string (one of: "tap-to-reveal", "drag-to-learn", "animation", "celebration")
-    - image: string (single emoji representing the concept)
-    
-    Key learning points to cover: ${topic.keyLearningPoints.join(', ')}
-    
-    ${userProfile?.name ? `Address the student as ${userProfile.name} occasionally in tips.` : ''}
-    Make it fun, engaging, and perfectly matched to the learning style!`
+    const prompt = `Create 4 lesson sections for Grade 5 about "${topic.title}".
+
+LEARNING PROFILE: ${userProfile ? `${userProfile.name}, Speed ${userProfile.learningSpeed}/5, Style: ${contentStyle}` : 'Default student'}
+
+Return JSON array with:
+- id: 1-4
+- title: engaging title  
+- content: ${contentStyle}
+- tip: ${tipStyle} tip from Simba
+- interactive: "tap-to-reveal"|"drag-to-learn"|"animation"|"celebration"
+- image: single emoji
+
+Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `. Address ${userProfile.name} in tips.` : ''}`
 
     try {
       const response = await this.makeRequest([
@@ -126,16 +166,15 @@ class GroqAPIService {
   }
 
   async generateQuizQuestions(topic: Topic, count: number = 5): Promise<QuizQuestion[]> {
-    const prompt = `Create ${count} multiple choice quiz questions for Grade 5 students about "${topic.title}".
-    
-    Format as JSON array with these fields for each question:
-    - question: string (clear question)
-    - options: array of 4 strings (possible answers)
-    - correctAnswer: number (index 0-3 of correct option)
-    - explanation: string (simple explanation of why the answer is correct)
-    
-    Make questions appropriate for 10-11 year olds, with engaging scenarios and clear language.
-    Focus on: ${topic.keyLearningPoints.join(', ')}`
+    const prompt = `Create ${count} Grade 5 quiz questions about "${topic.title}".
+
+JSON format:
+- question: clear question
+- options: 4 answer choices  
+- correctAnswer: index 0-3
+- explanation: simple why explanation
+
+Age 10-11, engaging language. Focus: ${topic.keyLearningPoints.slice(0, 2).join(', ')}`
 
     try {
       const response = await this.makeRequest([
@@ -158,17 +197,7 @@ class GroqAPIService {
   }
 
   async generateChatResponse(topic: Topic, userMessage: string, conversationHistory: any[]): Promise<string> {
-    const systemPrompt = `You are Simba, a friendly lion mascot who teaches Grade 5 students about science. 
-    You're currently helping them learn about "${topic.title}".
-    
-    Personality:
-    - Enthusiastic and encouraging
-    - Uses simple, age-appropriate language
-    - Often uses lion-related expressions like "Roar-some!" or "That's mane-ificent!"
-    - Always supportive and patient
-    - Relates concepts to real-world examples kids understand
-    
-    Keep responses to 1-2 sentences, make them engaging and educational.`
+    const systemPrompt = `You are Simba, a friendly lion teaching Grade 5 students about "${topic.title}". Be enthusiastic, use simple language, lion expressions ("Roar-some!"), and relate to real-world examples. Keep responses 1-2 sentences.`
 
     try {
       const messages = [

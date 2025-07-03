@@ -1,40 +1,130 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { useAppSelector } from '../hooks/redux'
+import { useAppSelector, useAppDispatch } from '../hooks/redux'
+import { initializeAchievements } from '../features/achievements/achievementSlice'
 import AchievementBadge from '../components/AchievementBadge'
 import ProgressBar from '../components/ProgressBar'
 import SimbaMascot from '../components/SimbaMascot'
+import UserMenu from '../components/UserMenu'
 
 interface AchievementsScreenProps {
   onNavigate: (screen: string) => void
 }
 
 const AchievementsScreen: React.FC<AchievementsScreenProps> = ({ onNavigate }) => {
-  const { achievements, totalUnlocked } = useAppSelector((state) => state.achievements)
+  const dispatch = useAppDispatch()
+  const { achievements, totalUnlocked, isLoading, error } = useAppSelector((state) => state.achievements)
+  const { currentUser } = useAppSelector((state) => state.user)
   const totalAchievements = achievements.length
-  const completionPercentage = (totalUnlocked / totalAchievements) * 100
+  const completionPercentage = totalAchievements > 0 ? (totalUnlocked / totalAchievements) * 100 : 0
 
   const unlockedAchievements = achievements.filter(a => a.unlocked)
   const lockedAchievements = achievements.filter(a => !a.unlocked)
+
+  // Initialize achievements when component mounts if user is available and achievements are empty
+  useEffect(() => {
+    if (currentUser && achievements.length === 0 && !isLoading && !error) {
+      dispatch(initializeAchievements(currentUser.id))
+    }
+  }, [dispatch, currentUser, achievements.length, isLoading, error])
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="min-h-screen space-background flex items-center justify-center p-4">
+        <div className="text-center">
+          <SimbaMascot size="lg" animate={true} />
+          <motion.div
+            className="mt-4 text-white text-xl font-comic"
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          >
+            Loading your achievements... 🏆
+          </motion.div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show empty state if no achievements are available
+  if (!isLoading && achievements.length === 0) {
+    return (
+      <div className="min-h-screen space-background p-4">
+        {/* Header */}
+        <motion.header
+          className="flex items-center justify-between mb-6"
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <div className="flex items-center gap-4">
+            <motion.button
+              className="bg-white/20 backdrop-blur rounded-full p-3"
+              onClick={() => onNavigate('home')}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className="text-white text-xl">←</span>
+            </motion.button>
+            
+            <h1 className="font-comic text-2xl font-bold text-white">SciFly Achievements 🏆</h1>
+          </div>
+          
+          <UserMenu />
+        </motion.header>
+
+        <div className="max-w-md mx-auto text-center">
+          <motion.div
+            className="bg-white/95 backdrop-blur rounded-3xl p-8 shadow-xl"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <SimbaMascot size="lg" animate={true} />
+            <h2 className="font-comic text-xl font-bold text-gray-800 mt-4 mb-2">
+              Achievements Coming Soon! 🚧
+            </h2>
+            <p className="text-gray-600 mb-6">
+              {error 
+                ? "We're having trouble loading achievements right now. The database might need to be set up with seed data."
+                : "Achievement system is being prepared for you! Keep learning and check back soon!"
+              }
+            </p>
+            <motion.button
+              className="bg-primary-500 text-white font-bold py-3 px-6 rounded-2xl"
+              onClick={() => onNavigate('home')}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              Continue Learning 🚀
+            </motion.button>
+          </motion.div>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen space-background p-4">
       {/* Header */}
       <motion.header
-        className="flex items-center gap-4 mb-6"
+        className="flex items-center justify-between mb-6"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <motion.button
-          className="bg-white/20 backdrop-blur rounded-full p-3"
-          onClick={() => onNavigate('home')}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <span className="text-white text-xl">←</span>
-        </motion.button>
+        <div className="flex items-center gap-4">
+          <motion.button
+            className="bg-white/20 backdrop-blur rounded-full p-3"
+            onClick={() => onNavigate('home')}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <span className="text-white text-xl">←</span>
+          </motion.button>
+          
+          <h1 className="font-comic text-2xl font-bold text-white">SciFly Achievements 🏆</h1>
+        </div>
         
-        <h1 className="font-comic text-2xl font-bold text-white">SciFly Achievements 🏆</h1>
+        {/* User Menu */}
+        <UserMenu />
       </motion.header>
 
       <div className="max-w-2xl mx-auto">

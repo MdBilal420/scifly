@@ -134,13 +134,13 @@ export const updateAchievementProgress = createAsyncThunk(
 
       // Log achievement activity
       if (unlocked) {
-        await userAPI.logActivity(userId, 'achievement_unlocked', {
+        await userAPI.logActivity(userId, 'achievement_unlock', {
           achievementId: achievement.id,
           achievementKey,
           progress
         })
       } else {
-        await userAPI.logActivity(userId, 'achievement_progress', {
+        await userAPI.logActivity(userId, 'achievement_unlock', {
           achievementId: achievement.id,
           achievementKey,
           progress
@@ -185,7 +185,7 @@ export const unlockAchievement = createAsyncThunk(
       )
 
       // Log unlock activity
-      await userAPI.logActivity(userId, 'achievement_unlocked', {
+      await userAPI.logActivity(userId, 'achievement_unlock', {
         achievementId: achievement.id,
         achievementKey
       })
@@ -282,11 +282,22 @@ const achievementSlice = createSlice({
 
     // Initialize achievements
     builder
+      .addCase(initializeAchievements.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
       .addCase(initializeAchievements.fulfilled, (state, action) => {
+        state.isLoading = false
         state.allAchievements = action.payload.allAchievements
         state.userAchievements = action.payload.userAchievements
         state.achievements = action.payload.mergedAchievements
         state.totalUnlocked = action.payload.userAchievements.filter(ua => ua.unlocked).length
+        state.error = null
+      })
+      .addCase(initializeAchievements.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+        // Keep existing achievements if initialization fails
       })
 
     // Update achievement progress

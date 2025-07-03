@@ -507,13 +507,24 @@ function getAvatarForSpeed(speed: number): string {
 
 // Setup auth state listener
 export const setupAuthListener = () => (dispatch: any) => {
+  let isInitialized = false
+  
   const { data: { subscription } } = authAPI.onAuthStateChange((event: string, session: any) => {
     const user = session?.user || null
     dispatch(setAuthUser(user))
-    if (user) {
-      dispatch(loadCurrentUser())
-    } else {
-      dispatch(resetUser())
+    
+    // Only handle auth state changes after initial load to prevent duplicate calls
+    if (isInitialized) {
+      if (user && event === 'SIGNED_IN') {
+        dispatch(loadCurrentUser())
+      } else if (!user && event === 'SIGNED_OUT') {
+        dispatch(resetUser())
+      }
+    }
+    
+    // Mark as initialized after first event
+    if (!isInitialized) {
+      isInitialized = true
     }
   })
   

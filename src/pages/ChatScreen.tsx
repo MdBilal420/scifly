@@ -6,6 +6,7 @@ import { updateAchievementProgress } from '../features/achievements/achievementS
 import SimbaMascot from '../components/SimbaMascot'
 import PrimaryButton from '../components/PrimaryButton'
 import SpaceDecorations from '../components/SpaceDecorations'
+import UserMenu from '../components/UserMenu'
 
 interface ChatScreenProps {
   onNavigate: (screen: string) => void
@@ -35,7 +36,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ onNavigate }) => {
     }))
     dispatch(updateAchievementProgress({ 
       userId: currentUser.id, 
-      achievementKey: 'curious-mind', 
+      achievementKey: 'curious_mind', 
       progress: 1 
     }))
     
@@ -55,28 +56,33 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ onNavigate }) => {
       <SpaceDecorations />
       {/* Header */}
       <motion.header
-        className="flex items-center gap-4 p-4 bg-white/20 backdrop-blur"
+        className="flex items-center justify-between p-4 bg-white/20 backdrop-blur"
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <motion.button
-          className="bg-white/20 backdrop-blur rounded-full p-2"
-          onClick={() => onNavigate('home')}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <span className="text-white text-xl">←</span>
-        </motion.button>
-        
-        <div className="flex items-center gap-3">
-          <SimbaMascot size="sm" animate={true} />
-          <div>
-            <h1 className="font-comic text-xl font-bold text-white">SciFly Chat with Simba 🚀</h1>
-            <p className="text-white/80 text-sm">
-              {isTyping ? 'Simba is typing...' : 'Ask me anything about science!'}
-            </p>
+        <div className="flex items-center gap-4">
+          <motion.button
+            className="bg-white/20 backdrop-blur rounded-full p-2"
+            onClick={() => onNavigate('home')}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            <span className="text-white text-xl">←</span>
+          </motion.button>
+          
+          <div className="flex items-center gap-3">
+            <SimbaMascot size="sm" animate={true} />
+            <div>
+              <h1 className="font-comic text-xl font-bold text-white">SciFly Chat with Simba 🚀</h1>
+              <p className="text-white/80 text-sm">
+                {isTyping ? 'Simba is typing...' : 'Ask me anything about science!'}
+              </p>
+            </div>
           </div>
         </div>
+        
+        {/* User Menu */}
+        <UserMenu />
       </motion.header>
 
       {/* Chat Messages */}

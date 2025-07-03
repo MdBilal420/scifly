@@ -111,7 +111,7 @@ export const saveQuizAttempt = createAsyncThunk(
       })
 
       // Log quiz activity
-      await userAPI.logActivity(userId, 'quiz_completed', {
+      await userAPI.logActivity(userId, 'quiz_complete', {
         topicId,
         score,
         totalQuestions,
