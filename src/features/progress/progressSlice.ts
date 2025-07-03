@@ -80,7 +80,7 @@ export const updateTopicProgress = createAsyncThunk(
       
       // If topic completed, update user activity
       if (progressData.completed) {
-        await userAPI.logActivity(userId, 'topic_completed', { topicId })
+        await userAPI.logActivity(userId, 'lesson_complete', { topicId })
       }
       
       return { topicId, ...progressData }
@@ -109,7 +109,7 @@ export const updateLessonProgress = createAsyncThunk(
       await progressAPI.updateLessonProgress(userId, lessonId, progressData)
       
       // Log lesson activity
-      await userAPI.logActivity(userId, 'lesson_progress', { 
+      await userAPI.logActivity(userId, 'lesson_complete', { 
         lessonId, 
         progress: progressData.progress_percentage 
       })
@@ -176,7 +176,7 @@ export const completeTopicStory = createAsyncThunk(
       await progressAPI.completeTopicStory(userId, topicId, timeSpent)
       
       // Log completion activity
-      await userAPI.logActivity(userId, 'topic_story_completed', { 
+      await userAPI.logActivity(userId, 'lesson_complete', { 
         topicId, 
         timeSpent 
       })

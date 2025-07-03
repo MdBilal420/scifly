@@ -73,32 +73,11 @@ export const fetchTopicBySlug = createAsyncThunk(
   }
 )
 
-export const loadSavedLessons = createAsyncThunk(
-  'topics/loadSavedLessons',
-  async ({ topicId, learningSpeed }: { topicId: string; learningSpeed: string }, { rejectWithValue }) => {
-    try {
-      const lessons = await topicsAPI.getLessons(topicId, learningSpeed)
-      
-      // Convert database lessons to LessonContent format
-      const lessonContent: LessonContent[] = lessons.map((lesson: any, index: number) => ({
-        id: index + 1,
-        title: lesson.title,
-        content: lesson.content,
-        tip: lesson.tip,
-        interactive: lesson.interactive_type,
-        image: lesson.image
-      }))
-      
-      return lessonContent
-    } catch (error: any) {
-      return rejectWithValue(error.message || 'Failed to load saved lessons')
-    }
-  }
-)
+
 
 export const generateLessonContent = createAsyncThunk(
   'topics/generateLessonContent',
-  async (topic: Topic, { rejectWithValue, getState, dispatch }) => {
+  async (topic: Topic, { rejectWithValue, getState }) => {
     try {
       const state = getState() as RootState
       const userProfile = state.user.currentUser
@@ -107,31 +86,59 @@ export const generateLessonContent = createAsyncThunk(
         throw new Error('User profile not found')
       }
 
-      // First, try to load existing lessons from database
       const learningSpeed = userProfile.learningSpeed.toString()
-      await dispatch(loadSavedLessons({ topicId: topic.id, learningSpeed }))
       
-      const currentState = getState() as RootState
-      if (currentState.topics.lessonContent.length > 0) {
-        return currentState.topics.lessonContent
+      // First, try to load existing lessons from database
+      try {
+        console.log(`🔍 Checking for existing lessons: topic=${topic.id}, speed=${learningSpeed}`)
+        const savedLessons = await topicsAPI.getLessons(topic.id, learningSpeed)
+        
+        if (savedLessons.length > 0) {
+          console.log(`✅ Found ${savedLessons.length} existing lessons, using cached content`)
+          // Convert database lessons to LessonContent format
+          const lessonContent: LessonContent[] = savedLessons.map((lesson: any, index: number) => ({
+            id: index + 1,
+            title: lesson.title,
+            content: lesson.content,
+            tip: lesson.tip,
+            interactive: lesson.interactive_type,
+            image: lesson.image
+          }))
+          
+          return lessonContent
+        } else {
+          console.log('📝 No existing lessons found, will generate new content')
+        }
+      } catch (dbError) {
+        console.warn('⚠️ Failed to load saved lessons, generating new content:', dbError)
       }
 
       // If no saved lessons, generate new content
       const content = await groqAPI.generateLessonContent(topic, userProfile)
       
-      // Save generated lessons to database
+      // Save generated lessons to database (optional, continue even if this fails)
       if (userProfile.id && content.length > 0) {
-        for (const lesson of content) {
-          await topicsAPI.saveLesson({
-            topic_id: topic.id,
-            section_number: lesson.id,
-            title: lesson.title,
-            content: lesson.content,
-            tip: lesson.tip,
-            interactive_type: lesson.interactive,
-            image: lesson.image,
-            learning_speed_target: learningSpeed
-          })
+        try {
+          console.log(`💾 Saving ${content.length} lessons for topic ${topic.id}, speed ${learningSpeed}`)
+          
+          for (const lesson of content) {
+            await topicsAPI.saveLesson({
+              topic_id: topic.id,
+              section_number: lesson.id,
+              title: lesson.title,
+              content: lesson.content,
+              tip: lesson.tip,
+              interactive_type: lesson.interactive,
+              image: lesson.image,
+              learning_speed_target: learningSpeed
+            })
+          }
+          
+          console.log('✅ Lessons saved successfully to database')
+        } catch (saveError: any) {
+          console.warn('⚠️ Failed to save lessons to database:', saveError.message)
+          // Continue anyway with generated content - lessons will still work from memory
+          // Common causes: duplicate content (already exists), network issues, or RLS policies
         }
       }
       
@@ -214,6 +221,8 @@ const topicsSlice = createSlice({
       state.quizQuestions = []
       state.contentError = null
       state.quizError = null
+      state.isGeneratingContent = false
+      state.isGeneratingQuiz = false
     },
     clearCurrentTopic: (state) => {
       state.currentTopic = null
@@ -257,14 +266,7 @@ const topicsSlice = createSlice({
         state.topicsError = action.payload as string
       })
 
-    // Load saved lessons
-    builder
-      .addCase(loadSavedLessons.fulfilled, (state, action) => {
-        state.lessonContent = action.payload
-      })
-      .addCase(loadSavedLessons.rejected, (state, action) => {
-        state.contentError = action.payload as string
-      })
+
 
     // Generate lesson content
     builder

@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { updateLessonProgress } from '../features/progress/progressSlice'
-import { generateLessonContent } from '../features/topics/topicsSlice'
+import { updateTopicProgress } from '../features/progress/progressSlice'
+import { generateLessonContent, clearErrors } from '../features/topics/topicsSlice'
 import SimbaMascot from '../components/SimbaMascot'
 import PrimaryButton from '../components/PrimaryButton'
 import ProgressBar from '../components/ProgressBar'
 import DynamicBackground from '../components/DynamicBackground'
+import UserMenu from '../components/UserMenu'
 
 interface LessonScreenProps {
   onNavigate: (screen: string) => void
@@ -20,10 +21,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const { currentUser } = useAppSelector((state) => state.user)
 
   useEffect(() => {
-    if (currentTopic && lessonContent.length === 0 && !isGeneratingContent) {
+    if (currentTopic && lessonContent.length === 0 && !isGeneratingContent && !contentError) {
       dispatch(generateLessonContent(currentTopic))
     }
-  }, [currentTopic, lessonContent.length, isGeneratingContent, dispatch])
+  }, [currentTopic?.id, isGeneratingContent, contentError, dispatch]) // More specific dependencies
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {
@@ -61,7 +62,11 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
             <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
             <p className="text-gray-600 mb-4">I couldn't generate the lesson content. Let's try again!</p>
             <PrimaryButton
-              onClick={() => dispatch(generateLessonContent(currentTopic))}
+              onClick={() => {
+                // Clear error first, then retry
+                dispatch(clearErrors())
+                dispatch(generateLessonContent(currentTopic))
+              }}
               className="w-full mb-2"
             >
               Try Again
@@ -86,17 +91,19 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
 
     if (currentSection < lessonContent.length - 1) {
       setCurrentSection(currentSection + 1)
-      dispatch(updateLessonProgress({ 
+      // Track progress at topic level (sections within a topic)
+      dispatch(updateTopicProgress({ 
         userId: currentUser.id, 
-        lessonId: currentTopic.id, 
+        topicId: currentTopic.id, 
         progressData: { 
           progress_percentage: progress + (100 / lessonContent.length) 
         } 
       }))
     } else {
-      dispatch(updateLessonProgress({ 
+      // Complete the entire topic
+      dispatch(updateTopicProgress({ 
         userId: currentUser.id, 
-        lessonId: currentTopic.id, 
+        topicId: currentTopic.id, 
         progressData: { 
           progress_percentage: 100,
           completed: true 
@@ -133,10 +140,15 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
           />
         </div>
         
-        <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2 glass-3d tilt-3d">
-          <span className="text-white font-bold text-sm">
-            {currentSection + 1}/{lessonContent.length}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2 glass-3d tilt-3d">
+            <span className="text-white font-bold text-sm">
+              {currentSection + 1}/{lessonContent.length}
+            </span>
+          </div>
+          
+          {/* User Menu */}
+          <UserMenu />
         </div>
       </motion.header>
 

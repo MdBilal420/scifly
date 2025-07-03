@@ -153,7 +153,7 @@ export const clearChatHistory = createAsyncThunk(
       await chatAPI.clearChatHistory(userId, topicId)
       
       // Log clear activity
-      await userAPI.logActivity(userId, 'chat_cleared', { topicId })
+      await userAPI.logActivity(userId, 'chat_message', { topicId, action: 'cleared' })
       
       return topicId
     } catch (error: any) {
@@ -273,13 +273,10 @@ const chatSlice = createSlice({
         state.isSendingMessage = false
         state.isTyping = false
         
-        // Add both user message and Simba's response
+        // Add both user message and Simba's response immediately
+        // The UI will handle the delay effect with animations
         state.messages.push(action.payload.userMessage)
-        
-        // Add Simba's response with a slight delay effect
-        setTimeout(() => {
-          state.messages.push(action.payload.simbaResponse)
-        }, 500)
+        state.messages.push(action.payload.simbaResponse)
       })
       .addCase(sendMessage.rejected, (state, action) => {
         state.isSendingMessage = false
