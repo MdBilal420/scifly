@@ -99,7 +99,7 @@ const LandingPage: React.FC = () => {
             <h1 className="font-comic text-5xl md:text-6xl font-bold text-white mb-6 leading-tight">
               Science Learning
               <br />
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary-300 to-secondary-300">
+              <span className="bg-gradient-to-r from-yellow-400 via-orange-400 to-pink-400 bg-clip-text text-transparent font-extrabold animate-pulse" style={{ WebkitBackgroundClip: 'text', filter: 'drop-shadow(0 2px 4px rgba(255,255,255,0.3))' }}>
                 Made Fun! 🚀
               </span>
             </h1>
