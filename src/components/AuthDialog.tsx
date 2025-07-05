@@ -34,6 +34,17 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose, initialMode })
         name: ''
       })
       dispatch(clearError())
+      
+      // Prevent body scroll
+      document.body.classList.add('modal-open')
+    } else {
+      // Re-enable body scroll
+      document.body.classList.remove('modal-open')
+    }
+
+    // Cleanup on unmount
+    return () => {
+      document.body.classList.remove('modal-open')
     }
   }, [isOpen, initialMode, dispatch])
 
@@ -118,18 +129,23 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose, initialMode })
     <AnimatePresence>
       {isOpen && (
         <motion.div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 modal-backdrop"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
+          transition={{ duration: 0.2, ease: "easeInOut" }}
           onClick={onClose}
         >
           <motion.div
-            className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl max-w-md w-full"
-            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+            className="bg-white/95 backdrop-blur rounded-3xl shadow-2xl max-w-md w-full modal-content"
+            initial={{ scale: 0.85, opacity: 0, y: 40 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.9, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
+            exit={{ scale: 0.85, opacity: 0, y: 40 }}
+            transition={{ 
+              duration: 0.3, 
+              ease: [0.23, 1, 0.32, 1],
+              delay: isOpen ? 0.1 : 0
+            }}
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header */}
@@ -157,10 +173,15 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose, initialMode })
                 <AnimatePresence>
                   {isSignUp && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      transition={{ 
+                        duration: 0.4, 
+                        ease: "easeInOut",
+                        opacity: { duration: 0.2 }
+                      }}
+                      style={{ overflow: 'hidden' }}
                     >
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Your Name
@@ -213,10 +234,15 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose, initialMode })
                 <AnimatePresence>
                   {isSignUp && (
                     <motion.div
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto' }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.3 }}
+                      initial={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      animate={{ opacity: 1, height: 'auto', marginBottom: 16 }}
+                      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
+                      transition={{ 
+                        duration: 0.4, 
+                        ease: "easeInOut",
+                        opacity: { duration: 0.2 }
+                      }}
+                      style={{ overflow: 'hidden' }}
                     >
                       <label className="block text-sm font-medium text-gray-700 mb-2">
                         Confirm Password
@@ -234,26 +260,34 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose, initialMode })
                 </AnimatePresence>
 
                 {/* Password Error */}
-                {getPasswordError() && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-sm text-center"
-                  >
-                    {getPasswordError()}
-                  </motion.div>
-                )}
+                <AnimatePresence>
+                  {getPasswordError() && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="text-red-500 text-sm text-center"
+                    >
+                      {getPasswordError()}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* API Error */}
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-2xl"
-                  >
-                    {error}
-                  </motion.div>
-                )}
+                <AnimatePresence>
+                  {error && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10, scale: 0.95 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -10, scale: 0.95 }}
+                      transition={{ duration: 0.3, ease: "easeOut" }}
+                      className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-2xl"
+                    >
+                      {error}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
                 {/* Submit Button */}
                 <button

@@ -296,6 +296,11 @@
   .modal-scroll::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.5);
   }
+
+  /* Prevent body scroll when modal is open */
+  .modal-open {
+    overflow: hidden !important;
+  }
   
   .pulse-3d {
     animation: pulse3d 2s ease-in-out infinite;
