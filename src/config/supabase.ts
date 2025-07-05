@@ -41,6 +41,24 @@ export interface DatabaseUser {
   created_at: string
   last_active_at: string
   updated_at: string
+  speed_adaptation_data?: {
+    auto_adjust: boolean
+    preferred_modes: string[]
+    adaptation_history: Array<{
+      old_speed: number
+      new_speed: number
+      reason: string
+      timestamp: number
+    }>
+    performance_by_speed: Record<number, {
+      total_lessons: number
+      completed_lessons: number
+      avg_engagement: number
+      avg_completion_time: number
+    }>
+    last_speed_change: number | null
+    total_adaptations: number
+  }
 }
 
 export interface DatabaseTopic {

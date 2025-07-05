@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Generative UI styles */
+@import './styles/generativeUI.css';
+
 @layer base {
   body {
     font-family: 'Nunito', sans-serif;

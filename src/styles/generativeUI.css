@@ -1,0 +1,240 @@
+/* Generative UI Styles - Speed-based adaptations */
+
+/* Base speed classes */
+.lesson-speed-1 {
+  --font-size-base: 1.25rem;
+  --spacing-base: 2rem;
+  --animation-duration: 2s;
+  --color-primary: #10b981; /* Calming green */
+  --color-secondary: #6ee7b7;
+  --border-radius: 1rem;
+}
+
+.lesson-speed-2 {
+  --font-size-base: 1.125rem;
+  --spacing-base: 1.75rem;
+  --animation-duration: 1.5s;
+  --color-primary: #3b82f6; /* Calming blue */
+  --color-secondary: #93c5fd;
+  --border-radius: 0.875rem;
+}
+
+.lesson-speed-3 {
+  --font-size-base: 1rem;
+  --spacing-base: 1.5rem;
+  --animation-duration: 1s;
+  --color-primary: #8b5cf6; /* Vibrant purple */
+  --color-secondary: #c4b5fd;
+  --border-radius: 0.75rem;
+}
+
+.lesson-speed-4 {
+  --font-size-base: 0.925rem;
+  --spacing-base: 1.25rem;
+  --animation-duration: 0.75s;
+  --color-primary: #f59e0b; /* Professional amber */
+  --color-secondary: #fde68a;
+  --border-radius: 0.625rem;
+}
+
+.lesson-speed-5 {
+  --font-size-base: 0.875rem;
+  --spacing-base: 1rem;
+  --animation-duration: 0.5s;
+  --color-primary: #ef4444; /* Professional red */
+  --color-secondary: #fca5a5;
+  --border-radius: 0.5rem;
+}
+
+/* Layout adaptations */
+.layout-single-column-large {
+  display: flex;
+  flex-direction: column;
+  max-width: 600px;
+  margin: 0 auto;
+  gap: var(--spacing-base);
+}
+
+.layout-image-focused {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-base);
+  align-items: start;
+}
+
+.layout-text-focused {
+  display: flex;
+  flex-direction: column;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.layout-chat-interface {
+  display: grid;
+  grid-template-rows: 1fr auto;
+  height: 100vh;
+  max-height: 600px;
+}
+
+.layout-balanced-layout {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-base);
+}
+
+/* Content adaptations */
+.content-chunking-small {
+  margin-bottom: calc(var(--spacing-base) * 1.5);
+  padding: var(--spacing-base);
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--border-radius);
+  border-left: 4px solid var(--color-primary);
+}
+
+.content-chunking-medium {
+  margin-bottom: var(--spacing-base);
+  padding: calc(var(--spacing-base) * 0.75);
+}
+
+.content-chunking-large {
+  margin-bottom: calc(var(--spacing-base) * 0.5);
+  padding: calc(var(--spacing-base) * 0.5);
+}
+
+/* Font size adaptations */
+.font-large {
+  font-size: var(--font-size-base);
+  line-height: 1.7;
+}
+
+.font-standard {
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+}
+
+.font-compact {
+  font-size: var(--font-size-base);
+  line-height: 1.5;
+}
+
+/* Animation speed adaptations */
+.animation-slow * {
+  transition-duration: calc(var(--animation-duration) * 2) !important;
+  animation-duration: calc(var(--animation-duration) * 2) !important;
+}
+
+.animation-standard * {
+  transition-duration: var(--animation-duration) !important;
+  animation-duration: var(--animation-duration) !important;
+}
+
+.animation-quick * {
+  transition-duration: calc(var(--animation-duration) * 0.5) !important;
+  animation-duration: calc(var(--animation-duration) * 0.5) !important;
+}
+
+/* Interaction level adaptations */
+.interaction-simple .interactive-element {
+  padding: calc(var(--spacing-base) * 1.5);
+  font-size: calc(var(--font-size-base) * 1.2);
+  border: 2px solid var(--color-primary);
+}
+
+.interaction-moderate .interactive-element {
+  padding: var(--spacing-base);
+  font-size: var(--font-size-base);
+  border: 1px solid var(--color-primary);
+}
+
+.interaction-complex .interactive-element {
+  padding: calc(var(--spacing-base) * 0.75);
+  font-size: calc(var(--font-size-base) * 0.9);
+  border: 1px solid transparent;
+  background: rgba(var(--color-primary), 0.1);
+}
+
+/* Mode-specific styles */
+.mode-simplified {
+  --visual-emphasis: high;
+  --text-complexity: low;
+  --interaction-complexity: low;
+}
+
+.mode-visual {
+  --visual-emphasis: high;
+  --text-complexity: medium;
+  --interaction-complexity: medium;
+}
+
+.mode-reading {
+  --visual-emphasis: medium;
+  --text-complexity: high;
+  --interaction-complexity: low;
+}
+
+.mode-kinesthetic {
+  --visual-emphasis: medium;
+  --text-complexity: medium;
+  --interaction-complexity: high;
+}
+
+.mode-conversational {
+  --visual-emphasis: low;
+  --text-complexity: high;
+  --interaction-complexity: high;
+}
+
+/* Visual support levels */
+.visual-support-minimal .visual-content {
+  display: none;
+}
+
+.visual-support-moderate .visual-content {
+  opacity: 0.7;
+  max-width: 300px;
+}
+
+.visual-support-extensive .visual-content {
+  opacity: 1;
+  max-width: 100%;
+  margin: var(--spacing-base) 0;
+}
+
+/* Navigation styles */
+.navigation-linear {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-base);
+}
+
+.navigation-guided {
+  display: flex;
+  justify-content: center;
+  gap: calc(var(--spacing-base) * 0.5);
+  flex-wrap: wrap;
+}
+
+.navigation-free {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: calc(var(--spacing-base) * 0.5);
+}
+
+/* Responsive adaptations */
+@media (max-width: 768px) {
+  .layout-image-focused,
+  .layout-balanced-layout {
+    grid-template-columns: 1fr;
+  }
+  
+  .lesson-speed-1 {
+    --font-size-base: 1.125rem;
+    --spacing-base: 1.5rem;
+  }
+  
+  .lesson-speed-2 {
+    --font-size-base: 1rem;
+    --spacing-base: 1.25rem;
+  }
+} 
