@@ -18,6 +18,24 @@ export interface UserProfile {
   email?: string
   currentStreak?: number
   totalScore?: number
+  speedAdaptationData?: {
+    autoAdjust: boolean
+    preferredModes: string[]
+    adaptationHistory: Array<{
+      oldSpeed: number
+      newSpeed: number
+      reason: string
+      timestamp: number
+    }>
+    performanceBySpeed: Record<number, {
+      totalLessons: number
+      completedLessons: number
+      avgEngagement: number
+      avgCompletionTime: number
+    }>
+    lastSpeedChange: number | null
+    totalAdaptations: number
+  }
 }
 
 interface UserState {
@@ -70,7 +88,35 @@ function mapDatabaseUserToProfile(dbUser: DatabaseUser): UserProfile {
     },
     email: dbUser.email,
     currentStreak: dbUser.current_streak,
-    totalScore: dbUser.total_score
+    totalScore: dbUser.total_score,
+    speedAdaptationData: dbUser.speed_adaptation_data ? {
+      autoAdjust: dbUser.speed_adaptation_data.auto_adjust || true,
+      preferredModes: dbUser.speed_adaptation_data.preferred_modes || ['visual'],
+      adaptationHistory: (dbUser.speed_adaptation_data.adaptation_history || []).map(h => ({
+        oldSpeed: h.old_speed,
+        newSpeed: h.new_speed,
+        reason: h.reason,
+        timestamp: h.timestamp
+      })),
+      performanceBySpeed: Object.entries(dbUser.speed_adaptation_data.performance_by_speed || {}).reduce((acc, [speed, perf]) => {
+        acc[parseInt(speed)] = {
+          totalLessons: perf.total_lessons,
+          completedLessons: perf.completed_lessons,
+          avgEngagement: perf.avg_engagement,
+          avgCompletionTime: perf.avg_completion_time
+        }
+        return acc
+      }, {} as Record<number, any>),
+      lastSpeedChange: dbUser.speed_adaptation_data.last_speed_change || null,
+      totalAdaptations: dbUser.speed_adaptation_data.total_adaptations || 0
+    } : {
+      autoAdjust: true,
+      preferredModes: ['visual'],
+      adaptationHistory: [],
+      performanceBySpeed: {},
+      lastSpeedChange: null,
+      totalAdaptations: 0
+    }
   }
 }
 
@@ -299,6 +345,139 @@ export const updateUserActivity = createAsyncThunk(
       return Date.now()
     } catch (error: any) {
       return rejectWithValue(error.message || 'Failed to update activity')
+    }
+  }
+)
+
+// Speed adaptation async thunks
+export const updateUserSpeed = createAsyncThunk(
+  'user/updateUserSpeed',
+  async ({ newSpeed, reason }: { newSpeed: 1 | 2 | 3 | 4 | 5; reason: string }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { user: UserState }
+      const currentUser = state.user.currentUser
+      
+      if (!currentUser) throw new Error('No current user')
+      
+      const oldSpeed = currentUser.learningSpeed
+      const adaptationHistory = currentUser.speedAdaptationData?.adaptationHistory || []
+      
+      // Update speed adaptation data (using database schema format)
+      const updatedAdaptationData = {
+        auto_adjust: currentUser.speedAdaptationData?.autoAdjust || true,
+        preferred_modes: currentUser.speedAdaptationData?.preferredModes || ['visual'],
+        adaptation_history: [
+          ...adaptationHistory.map(h => ({
+            old_speed: h.oldSpeed,
+            new_speed: h.newSpeed,
+            reason: h.reason,
+            timestamp: h.timestamp
+          })),
+          {
+            old_speed: oldSpeed,
+            new_speed: newSpeed,
+            reason,
+            timestamp: Date.now()
+          }
+        ],
+        performance_by_speed: Object.entries(currentUser.speedAdaptationData?.performanceBySpeed || {}).reduce((acc, [speed, perf]) => {
+          acc[parseInt(speed)] = {
+            total_lessons: perf.totalLessons,
+            completed_lessons: perf.completedLessons,
+            avg_engagement: perf.avgEngagement,
+            avg_completion_time: perf.avgCompletionTime
+          }
+          return acc
+        }, {} as Record<number, any>),
+        last_speed_change: Date.now(),
+        total_adaptations: (currentUser.speedAdaptationData?.totalAdaptations || 0) + 1
+      }
+      
+      const updates = {
+        learning_speed: newSpeed.toString() as '1' | '2' | '3' | '4' | '5',
+        speed_adaptation_data: updatedAdaptationData
+      }
+      
+      const updatedProfile = await userAPI.updateProfile(currentUser.id, updates)
+      return mapDatabaseUserToProfile(updatedProfile)
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update learning speed')
+    }
+  }
+)
+
+export const updateSpeedPerformance = createAsyncThunk(
+  'user/updateSpeedPerformance',
+  async ({ 
+    speed, 
+    lessonCompleted, 
+    engagementScore, 
+    completionTime 
+  }: { 
+    speed: number;
+    lessonCompleted: boolean;
+    engagementScore: number;
+    completionTime: number;
+  }, { getState, rejectWithValue }) => {
+    try {
+      const state = getState() as { user: UserState }
+      const currentUser = state.user.currentUser
+      
+      if (!currentUser) throw new Error('No current user')
+      
+      const currentPerformance = currentUser.speedAdaptationData?.performanceBySpeed[speed] || {
+        totalLessons: 0,
+        completedLessons: 0,
+        avgEngagement: 0,
+        avgCompletionTime: 0
+      }
+      
+      const newTotalLessons = currentPerformance.totalLessons + 1
+      const newCompletedLessons = currentPerformance.completedLessons + (lessonCompleted ? 1 : 0)
+      const newAvgEngagement = (currentPerformance.avgEngagement * currentPerformance.totalLessons + engagementScore) / newTotalLessons
+      const newAvgCompletionTime = (currentPerformance.avgCompletionTime * currentPerformance.totalLessons + completionTime) / newTotalLessons
+      
+      // Convert to database schema format
+      const updatedPerformance = {
+        auto_adjust: currentUser.speedAdaptationData?.autoAdjust || true,
+        preferred_modes: currentUser.speedAdaptationData?.preferredModes || ['visual'],
+        adaptation_history: (currentUser.speedAdaptationData?.adaptationHistory || []).map(h => ({
+          old_speed: h.oldSpeed,
+          new_speed: h.newSpeed,
+          reason: h.reason,
+          timestamp: h.timestamp
+        })),
+        performance_by_speed: {
+          ...Object.entries(currentUser.speedAdaptationData?.performanceBySpeed || {}).reduce((acc, [s, perf]) => {
+            if (parseInt(s) !== speed) {
+              acc[parseInt(s)] = {
+                total_lessons: perf.totalLessons,
+                completed_lessons: perf.completedLessons,
+                avg_engagement: perf.avgEngagement,
+                avg_completion_time: perf.avgCompletionTime
+              }
+            }
+            return acc
+          }, {} as Record<number, any>),
+          [speed]: {
+            total_lessons: newTotalLessons,
+            completed_lessons: newCompletedLessons,
+            avg_engagement: newAvgEngagement,
+            avg_completion_time: newAvgCompletionTime
+          }
+        },
+        last_speed_change: currentUser.speedAdaptationData?.lastSpeedChange || null,
+        total_adaptations: currentUser.speedAdaptationData?.totalAdaptations || 0
+      }
+      
+      const updates = {
+        speed_adaptation_data: updatedPerformance
+      }
+      
+      const updatedProfile = await userAPI.updateProfile(currentUser.id, updates)
+      return mapDatabaseUserToProfile(updatedProfile)
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to update speed performance')
     }
   }
 )

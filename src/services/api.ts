@@ -8,6 +8,7 @@ import type {
   Achievement, 
   UserAchievement 
 } from '../config/supabase'
+import { generateContentForSpeed, generateUIConfig } from '../utils/generativeUI'
 
 // Helper function to resolve topic slug to UUID
 async function resolveTopicId(topicIdOrSlug: string): Promise<string> {
@@ -914,6 +915,303 @@ export const goalsAPI = {
   }
 }
 
+// ==========================================
+// ADAPTIVE LEARNING
+// ==========================================
+
+export const adaptiveAPI = {
+  // Get lesson with adaptive content
+  async getAdaptiveLesson(lessonId: string, userId: string, userSpeed: number) {
+    try {
+      // 1. Get base lesson data
+      const { data: lesson, error: lessonError } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('id', lessonId)
+        .single()
+
+      if (lessonError) throw lessonError
+
+      // 2. Check for cached adaptation
+      let adaptedContent = await this.getCachedAdaptation(lessonId, userSpeed)
+      
+      // 3. Generate new adaptation if none exists
+      if (!adaptedContent) {
+        adaptedContent = generateContentForSpeed(lesson.content, userSpeed)
+        await this.cacheAdaptation(lessonId, userSpeed, adaptedContent)
+      }
+
+      // 4. Generate UI configuration
+      const uiConfig = generateUIConfig(userSpeed)
+
+      // 5. Create tracking record
+      const trackingId = await this.createTrackingRecord(userId, lessonId, userSpeed)
+
+      return {
+        lesson: {
+          ...lesson,
+          adaptedContent
+        },
+        adaptedContent,
+        uiConfig,
+        trackingId
+      }
+    } catch (error: any) {
+      console.error('Error getting adaptive lesson:', error)
+      throw error
+    }
+  },
+
+  // Get cached content adaptation
+  async getCachedAdaptation(lessonId: string, userSpeed: number) {
+    try {
+      const { data, error } = await supabase
+        .from('content_adaptations')
+        .select('adapted_content, effectiveness_score')
+        .eq('lesson_id', lessonId)
+        .eq('user_speed', userSpeed)
+        .eq('adaptation_type', 'auto')
+        .order('effectiveness_score', { ascending: false })
+        .limit(1)
+
+      if (error || !data.length) return null
+      return data[0].adapted_content
+    } catch (error) {
+      console.warn('Failed to get cached adaptation:', error)
+      return null
+    }
+  },
+
+  // Cache generated adaptation
+  async cacheAdaptation(lessonId: string, userSpeed: number, adaptedContent: any) {
+    try {
+      await supabase
+        .from('content_adaptations')
+        .insert({
+          lesson_id: lessonId,
+          user_speed: userSpeed,
+          adapted_content: adaptedContent,
+          adaptation_type: 'auto',
+          effectiveness_score: 0,
+          usage_count: 0
+        })
+    } catch (error) {
+      console.warn('Failed to cache adaptation:', error)
+      // Don't throw - caching failure shouldn't break the main flow
+    }
+  },
+
+  // Create tracking record
+  async createTrackingRecord(userId: string, lessonId: string, userSpeed: number) {
+    try {
+      const { data, error } = await supabase
+        .from('user_content_interactions')
+        .insert({
+          user_id: userId,
+          lesson_id: lessonId,
+          interaction_type: 'view',
+          interaction_data: {
+            user_speed: userSpeed,
+            timestamp: Date.now()
+          },
+          time_spent_seconds: 0
+        })
+        .select('id')
+        .single()
+
+      if (error) throw error
+      return data.id
+    } catch (error) {
+      console.warn('Failed to create tracking record:', error)
+      return `fallback_${Date.now()}`
+    }
+  },
+
+  // Track user interaction
+  async trackUserInteraction(interaction: {
+    userId: string
+    lessonId: string
+    adaptationId?: string
+    interactionType: string
+    interactionData: any
+    engagementScore?: number
+    timeSpentSeconds: number
+  }) {
+    try {
+      await supabase
+        .from('user_content_interactions')
+        .insert({
+          user_id: interaction.userId,
+          lesson_id: interaction.lessonId,
+          adaptation_id: interaction.adaptationId,
+          interaction_type: interaction.interactionType,
+          interaction_data: interaction.interactionData,
+          engagement_score: interaction.engagementScore,
+          time_spent_seconds: interaction.timeSpentSeconds
+        })
+
+      // Update adaptation effectiveness if applicable
+      if (interaction.adaptationId && interaction.engagementScore) {
+        await this.updateAdaptationEffectiveness(interaction.adaptationId, interaction.engagementScore)
+      }
+    } catch (error) {
+      console.error('Error tracking interaction:', error)
+      // Don't throw - tracking failure shouldn't break user experience
+    }
+  },
+
+  // Update adaptation effectiveness
+  async updateAdaptationEffectiveness(adaptationId: string, engagementScore: number) {
+    try {
+      // Get current stats
+      const { data: adaptation } = await supabase
+        .from('content_adaptations')
+        .select('effectiveness_score, usage_count')
+        .eq('id', adaptationId)
+        .single()
+
+      if (!adaptation) return
+
+      // Calculate new effectiveness score (weighted average)
+      const currentScore = adaptation.effectiveness_score || 0
+      const currentCount = adaptation.usage_count || 0
+      const newCount = currentCount + 1
+      const newScore = ((currentScore * currentCount) + engagementScore) / newCount
+
+      // Update the record
+      await supabase
+        .from('content_adaptations')
+        .update({
+          effectiveness_score: newScore,
+          usage_count: newCount
+        })
+        .eq('id', adaptationId)
+    } catch (error) {
+      console.warn('Failed to update adaptation effectiveness:', error)
+    }
+  },
+
+  // Get lessons adapted for specific user speed
+  async getLessonsForSpeed(topicIdOrSlug: string, userSpeed: number) {
+    try {
+      const topicId = await resolveTopicId(topicIdOrSlug)
+      
+      const { data: lessons, error } = await supabase
+        .from('lessons')
+        .select('*')
+        .eq('topic_id', topicId)
+        .order('section_number')
+
+      if (error) throw error
+
+      // Adapt each lesson for the user's speed
+      const adaptedLessons = await Promise.all(
+        lessons.map(async (lesson) => {
+          const adaptedContent = await this.getCachedAdaptation(lesson.id, userSpeed) ||
+                                generateContentForSpeed(lesson.content, userSpeed)
+          
+          return {
+            ...lesson,
+            adaptedContent,
+            uiConfig: generateUIConfig(userSpeed)
+          }
+        })
+      )
+
+      return adaptedLessons
+    } catch (error: any) {
+      console.error('Error getting lessons for speed:', error)
+      throw error
+    }
+  },
+
+  // Suggest optimal learning speed
+  async suggestOptimalSpeed(userId: string) {
+    try {
+      // Get user's recent performance data (last 30 days)
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()
+      
+      const { data: interactions, error } = await supabase
+        .from('user_content_interactions')
+        .select('*, lessons!inner(learning_speed_target)')
+        .eq('user_id', userId)
+        .gte('created_at', thirtyDaysAgo)
+        .order('created_at', { ascending: false })
+
+      if (error) throw error
+
+      // Analyze performance by speed
+      const performanceBySpeed = this.analyzePerformanceBySpeed(interactions)
+      
+      // Find optimal speed
+      return this.findOptimalSpeed(performanceBySpeed)
+    } catch (error: any) {
+      console.error('Error suggesting optimal speed:', error)
+      return { suggestedSpeed: 3, reason: 'Default recommendation', confidence: 0.5 }
+    }
+  },
+
+  // Analyze user performance across different speeds
+  analyzePerformanceBySpeed(interactions: any[]) {
+    const speedStats: Record<number, any> = {}
+
+    interactions.forEach(interaction => {
+      const speed = interaction.interaction_data?.user_speed || 3
+      
+      if (!speedStats[speed]) {
+        speedStats[speed] = {
+          totalInteractions: 0,
+          totalEngagement: 0,
+          totalTime: 0,
+          completions: 0
+        }
+      }
+
+      speedStats[speed].totalInteractions++
+      speedStats[speed].totalEngagement += interaction.engagement_score || 0
+      speedStats[speed].totalTime += interaction.time_spent_seconds || 0
+      
+      if (interaction.interaction_type === 'complete') {
+        speedStats[speed].completions++
+      }
+    })
+
+    // Calculate averages and rates
+    Object.keys(speedStats).forEach(speed => {
+      const stats = speedStats[Number(speed)]
+      stats.avgEngagement = stats.totalEngagement / stats.totalInteractions
+      stats.avgTime = stats.totalTime / stats.totalInteractions
+      stats.completionRate = stats.completions / stats.totalInteractions
+    })
+
+    return speedStats
+  },
+
+  // Find optimal learning speed
+  findOptimalSpeed(performanceBySpeed: Record<number, any>) {
+    let bestSpeed = 3
+    let bestScore = 0
+    let reason = 'Balanced recommendation'
+    
+    Object.entries(performanceBySpeed).forEach(([speed, stats]) => {
+      // Composite score considering engagement, completion rate, and time efficiency
+      const score = (stats.avgEngagement * 0.4) + 
+                    (stats.completionRate * 0.4) + 
+                    (Math.min(stats.avgTime / 300, 1) * 0.2) // Normalize time (5 min baseline)
+
+      if (score > bestScore) {
+        bestScore = score
+        bestSpeed = Number(speed)
+        reason = `Best performance at speed ${speed} (${(score * 100).toFixed(1)}% effectiveness)`
+      }
+    })
+
+    const confidence = Math.min(bestScore, 0.95) // Cap confidence at 95%
+
+    return { suggestedSpeed: bestSpeed, reason, confidence }
+  }
+}
+
 // Export all APIs
 export default {
   auth: authAPI,
@@ -924,5 +1222,6 @@ export default {
   quiz: quizAPI,
   achievements: achievementsAPI,
   analytics: analyticsAPI,
-  goals: goalsAPI
+  goals: goalsAPI,
+  adaptive: adaptiveAPI
 } 
