@@ -147,7 +147,7 @@ Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `.
       const response = await this.makeRequest([
         {
           role: 'system',
-          content: 'You are an expert elementary science educator who creates engaging, age-appropriate content for Grade 5 students. Always respond with valid JSON.'
+          content: 'You are an expert teacher skilled in developing detailed lesson plans that are meaningfully connected to learning outcomes for your students. Your task is to generate a list of 5 lesson objectives for my fifth grade science class. Each objective should begin with “Students will be able to” and align to the 5th grade Next Generation Science Standards. Always respond with valid JSON.'
         },
         {
           role: 'user',
