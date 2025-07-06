@@ -74,13 +74,18 @@ export const updateTopicProgress = createAsyncThunk(
       completed?: boolean;
       time_spent_seconds?: number;
     }
-  }, { rejectWithValue }) => {
+  }, { rejectWithValue, getState }) => {
     try {
       await progressAPI.updateProgress(userId, topicId, progressData)
       
-      // If topic completed, update user activity
+      // If topic completed, update user activity and daily progress
       if (progressData.completed) {
         await userAPI.logActivity(userId, 'lesson_complete', { topicId })
+        
+        // Get current daily progress and increment it
+        const state = getState() as any
+        const currentDailyProgress = state.progress.dailyProgress
+        await goalsAPI.updateDailyProgress(userId, currentDailyProgress + 1)
       }
       
       return { topicId, ...progressData }
@@ -171,7 +176,7 @@ export const loadLearningStats = createAsyncThunk(
 
 export const completeTopicStory = createAsyncThunk(
   'progress/completeTopicStory',
-  async ({ userId, topicId, timeSpent }: { userId: string; topicId: string; timeSpent: number }, { rejectWithValue }) => {
+  async ({ userId, topicId, timeSpent }: { userId: string; topicId: string; timeSpent: number }, { rejectWithValue, getState }) => {
     try {
       await progressAPI.completeTopicStory(userId, topicId, timeSpent)
       
@@ -180,6 +185,11 @@ export const completeTopicStory = createAsyncThunk(
         topicId, 
         timeSpent 
       })
+      
+      // Update daily progress
+      const state = getState() as any
+      const currentDailyProgress = state.progress.dailyProgress
+      await goalsAPI.updateDailyProgress(userId, currentDailyProgress + 1)
       
       return { topicId, timeSpent }
     } catch (error: any) {
@@ -224,7 +234,6 @@ const progressSlice = createSlice({
     // Update local progress from database data
     setUserProgress: (state, action: PayloadAction<UserProgress[]>) => {
       state.userProgress = action.payload
-      
       // Update calculated fields
       state.totalScore = action.payload.reduce((sum, p) => sum + (p.completed ? 100 : p.progress_percentage), 0)
       state.dailyProgress = action.payload.filter(p => {
@@ -246,12 +255,16 @@ const progressSlice = createSlice({
         state.userProgress = action.payload
         
         // Update calculated fields
-        state.totalScore = action.payload.reduce((sum, p) => sum + (p.completed ? 100 : p.progress_percentage), 0)
-        state.dailyProgress = action.payload.filter(p => {
-          const today = new Date().toDateString()
+        const newTotalScore = action.payload.reduce((sum, p) => sum + (p.completed ? 100 : p.progress_percentage), 0)
+        const today = new Date().toDateString()
+        const newDailyProgress = action.payload.filter(p => {
           const accessedToday = new Date(p.last_accessed_at).toDateString() === today
-          return accessedToday && p.progress_percentage > 0
+          const qualifies = accessedToday && p.progress_percentage > 0
+          return qualifies
         }).length
+        
+        state.totalScore = newTotalScore
+        state.dailyProgress = newDailyProgress
       })
       .addCase(loadUserProgress.rejected, (state, action) => {
         state.isLoading = false
@@ -265,12 +278,19 @@ const progressSlice = createSlice({
         const existingProgress = state.userProgress.find(p => p.topic_id === topicId)
         
         if (existingProgress) {
+          const wasCompleted = existingProgress.completed
           existingProgress.progress_percentage = action.payload.progress_percentage
           existingProgress.completed = action.payload.completed || false
           if (action.payload.time_spent_seconds) {
             existingProgress.time_spent_seconds += action.payload.time_spent_seconds
           }
           existingProgress.last_accessed_at = new Date().toISOString()
+          
+          // If topic was just completed (wasn't completed before but is now), increment daily progress
+          if (!wasCompleted && existingProgress.completed) {
+            state.dailyProgress += 1
+            state.totalScore += 10
+          }
         }
       })
 
@@ -288,11 +308,27 @@ const progressSlice = createSlice({
 
     // Load daily goal
     builder
+      .addCase(loadDailyGoal.pending, (state) => {
+        state.isLoading = true
+        state.error = null
+      })
       .addCase(loadDailyGoal.fulfilled, (state, action) => {
+        state.isLoading = false
         if (action.payload) {
-          state.dailyGoal = action.payload.lessons_goal || 4
-          state.dailyProgress = action.payload.completed_lessons || 0
+          const newDailyGoal = action.payload.lessons_goal || 4
+          const newDailyProgress = action.payload.completed_lessons || 0
+          state.dailyGoal = newDailyGoal
+          state.dailyProgress = newDailyProgress
+        } else {
+          state.dailyGoal = 4
+          state.dailyProgress = 0
         }
+      })
+      .addCase(loadDailyGoal.rejected, (state, action) => {
+        state.isLoading = false
+        state.error = action.payload as string
+        state.dailyGoal = 4
+        state.dailyProgress = 0
       })
 
     // Update daily goal
@@ -320,11 +356,18 @@ const progressSlice = createSlice({
         const progress = state.userProgress.find(p => p.topic_id === topicId)
         
         if (progress) {
+          const wasCompleted = progress.completed
           progress.completed = true
           progress.progress_percentage = 100
           progress.completed_at = new Date().toISOString()
           if (action.payload.timeSpent) {
             progress.time_spent_seconds += action.payload.timeSpent
+          }
+          
+          // If topic was just completed (wasn't completed before), increment daily progress
+          if (!wasCompleted) {
+            state.dailyProgress += 1
+            state.totalScore += 10
           }
         }
       })

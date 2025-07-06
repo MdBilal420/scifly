@@ -833,7 +833,13 @@ export const goalsAPI = {
       .eq('goal_date', today)
       .single()
     
-    if (error && error.code !== 'PGRST116') throw error
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // No daily goal exists for today, create a default one
+        return this.setDailyGoal(userId, 4) // Default goal of 4 lessons
+      }
+      throw error
+    }
     return data
   },
 
@@ -859,7 +865,6 @@ export const goalsAPI = {
     if (error) {
       // Handle duplicate key errors gracefully
       if (error.code === '23505') {
-        console.log(`ℹ️ Daily goal already exists: user=${userId}, date=${today}`)
         // Return minimal response to avoid breaking the flow
         return {
           id: 'existing-goal',
@@ -897,7 +902,6 @@ export const goalsAPI = {
     if (error) {
       // Handle duplicate key errors gracefully
       if (error.code === '23505') {
-        console.log(`ℹ️ Daily progress already exists: user=${userId}, date=${today}`)
         // Return minimal response to avoid breaking the flow
         return {
           id: 'existing-progress',
