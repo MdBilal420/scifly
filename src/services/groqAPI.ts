@@ -3,7 +3,7 @@ import { UserProfile } from '../features/user/userSlice'
 
 // Groq API configuration
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY || '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'
+const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY 
 
 export interface LessonContent {
   id: number
