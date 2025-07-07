@@ -80,10 +80,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
               Generate Lesson Content
             </PrimaryButton>
             <button
-              onClick={() => onNavigate('topics')}
+              onClick={() => onNavigate('activity')}
               className="text-gray-500 text-sm underline"
             >
-              Choose Different Topic
+              Choose Different Activity
             </button>
           </div>
         </div>
@@ -111,10 +111,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
               Try Again
             </PrimaryButton>
             <button
-              onClick={() => onNavigate('topics')}
+              onClick={() => onNavigate('activity')}
               className="text-gray-500 text-sm underline"
             >
-              Choose Different Topic
+              Choose Different Activity
             </button>
           </div>
         </div>
@@ -167,7 +167,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
           completed: true 
         } 
       }))
-      onNavigate('home')
+      onNavigate('activity')
     }
   }
 
@@ -175,7 +175,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
     if (currentSection > 0) {
       setCurrentSection(currentSection - 1)
     } else {
-      onNavigate('home')
+      onNavigate('activity')
     }
   }
 
@@ -195,7 +195,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
         <div className="flex-shrink-0 p-4 bg-white/10 backdrop-blur-lg">
           <div className="max-w-6xl mx-auto flex items-center gap-4">
             <button 
-              onClick={() => onNavigate('home')}
+              onClick={() => onNavigate('activity')}
               type="button"
               className="p-2 text-xl rounded-xl bg-white/20 text-white hover:bg-white/30 transition-all duration-300 backdrop-blur-lg shadow-lg min-w-[40px] h-10 flex items-center justify-center"
                           >
