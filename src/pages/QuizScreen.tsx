@@ -87,10 +87,10 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
               Try Again
             </PrimaryButton>
             <button
-              onClick={() => onNavigate('topics')}
+              onClick={() => onNavigate('activity')}
               className="text-gray-500 text-sm underline"
             >
-              Choose Different Topic
+              Choose Different Activity
             </button>
           </div>
         </div>
@@ -176,12 +176,12 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
 
             <div className="space-y-3">
               <PrimaryButton
-                onClick={() => onNavigate('lesson')}
+                onClick={() => onNavigate('activity')}
                 className="w-full"
                 variant="secondary"
                 icon="📚"
               >
-                Review Lesson
+                Try Another Activity
               </PrimaryButton>
               
               <PrimaryButton
@@ -210,7 +210,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
       >
         <motion.button
           className="bg-white/20 backdrop-blur rounded-full p-3"
-          onClick={() => onNavigate('home')}
+          onClick={() => onNavigate('activity')}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >

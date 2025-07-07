@@ -261,32 +261,32 @@ const AuthDialog: React.FC<AuthDialogProps> = ({ isOpen, onClose, initialMode })
 
                 {/* Password Error */}
                 <AnimatePresence>
-                  {getPasswordError() && (
-                    <motion.div
+                {getPasswordError() && (
+                  <motion.div
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-red-500 text-sm text-center"
-                    >
-                      {getPasswordError()}
-                    </motion.div>
-                  )}
+                    className="text-red-500 text-sm text-center"
+                  >
+                    {getPasswordError()}
+                  </motion.div>
+                )}
                 </AnimatePresence>
 
                 {/* API Error */}
                 <AnimatePresence>
-                  {error && (
-                    <motion.div
+                {error && (
+                  <motion.div
                       initial={{ opacity: 0, y: -10, scale: 0.95 }}
                       animate={{ opacity: 1, y: 0, scale: 1 }}
                       exit={{ opacity: 0, y: -10, scale: 0.95 }}
                       transition={{ duration: 0.3, ease: "easeOut" }}
-                      className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-2xl"
-                    >
-                      {error}
-                    </motion.div>
-                  )}
+                    className="text-red-500 text-sm text-center bg-red-50 p-3 rounded-2xl"
+                  >
+                    {error}
+                  </motion.div>
+                )}
                 </AnimatePresence>
 
                 {/* Submit Button */}

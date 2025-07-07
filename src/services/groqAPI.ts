@@ -3,7 +3,7 @@ import { UserProfile } from '../features/user/userSlice'
 
 // Groq API configuration
 const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions'
-const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY || 'YOUR_GROQ_API_KEY'
+const GROQ_API_KEY = process.env.REACT_APP_GROQ_API_KEY 
 
 export interface LessonContent {
   id: number
@@ -19,6 +19,16 @@ export interface QuizQuestion {
   options: string[]
   correctAnswer: number
   explanation: string
+}
+
+export interface FlashcardData {
+  id: number
+  type: 'qa' | 'term_definition' | 'image_description' | 'fill_blank'
+  front: string
+  back: string
+  hint?: string
+  image?: string
+  difficulty: 'easy' | 'medium' | 'hard'
 }
 
 class GroqAPIService {
@@ -39,9 +49,9 @@ class GroqAPIService {
           },
           body: JSON.stringify({
             messages,
-            model: 'llama-3.1-8b-instant', // Fast and capable model
+            model: 'llama3-8b-8192', // Use the model that works in our test
             temperature: 0.7,
-            max_tokens: 800, // Reduced from 1000 to minimize timeout risk
+            max_tokens: 4000, // Increase for flashcard generation to prevent truncation
             top_p: 1,
             stream: false
           }),
@@ -147,7 +157,7 @@ Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `.
       const response = await this.makeRequest([
         {
           role: 'system',
-          content: 'You are an expert elementary science educator who creates engaging, age-appropriate content for Grade 5 students. Always respond with valid JSON.'
+          content: 'You are an expert teacher skilled in developing detailed lesson plans that are meaningfully connected to learning outcomes for your students. Your task is to generate a list of 5 lesson objectives for my fifth grade science class. Each objective should begin with "Students will be able to" and align to the 5th grade Next Generation Science Standards. Always respond with valid JSON.'
         },
         {
           role: 'user',
@@ -280,6 +290,229 @@ Age 10-11, engaging language. Focus: ${topic.keyLearningPoints.slice(0, 2).join(
         explanation: "Science helps us understand how everything works in our amazing world!"
       }
     ]
+  }
+
+  async generateFlashcards(topic: Topic, userProfile: UserProfile): Promise<FlashcardData[]> {
+    const userSpeed = userProfile.learningSpeed
+    const deckSize = userSpeed <= 2 ? (userSpeed === 1 ? 10 : 15) : 12
+    const gradeLevel = userSpeed === 1 ? 'elementary school' : userSpeed === 2 ? 'middle school' : 'high school'
+    
+    const prompt = `You are a diligent ${gradeLevel} student, skilled in creating excellent study materials that help you achieve academic success.
+
+Your task is to create ${deckSize} flashcards about "${topic.title}" for ${gradeLevel} level students.
+
+Create a mix of these flashcard types:
+1. Q&A (Question → Answer)
+2. Term → Definition 
+3. Image Description (Describe → Term/Concept)
+4. Fill-in-the-blank (Sentence with ___ blank → Missing word/phrase)
+
+${userSpeed === 1 ? `
+For elementary students, focus on:
+- Simple, clear language
+- Basic concepts and vocabulary
+- Easy to remember facts
+- Visual and concrete examples
+` : `
+For middle school students, include:
+- Slightly more complex vocabulary
+- Cause and effect relationships
+- Process steps and sequences
+- Connections between concepts
+`}
+
+Topic Description: ${topic.description}
+Key Learning Points: ${topic.keyLearningPoints.join(', ')}
+
+Format each flashcard as JSON with this structure:
+{
+  "id": number,
+  "type": "qa" | "term_definition" | "image_description" | "fill_blank",
+  "front": "Question/Term/Description/Sentence with ___ blank",
+  "back": "Answer/Definition/Term/Missing word or phrase",
+  "hint": "Optional helpful hint (1-2 words)",
+  "difficulty": "easy" | "medium" | "hard"
+}
+
+Return ONLY a valid JSON array of ${deckSize} flashcards. No other text.`
+
+    try {
+      const response = await this.makeRequest([
+        {
+          role: 'system',
+          content: 'You are an expert elementary educator creating flashcards for grade school students. Always respond with valid JSON.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ])
+
+      // Parse the JSON response with better error handling
+      let cleanResponse = response.replace(/```json|```/g, '').trim()
+      
+      // Try to fix common JSON issues
+      try {
+        // First attempt: direct parse
+        const flashcards = JSON.parse(cleanResponse) as FlashcardData[]
+        return this.validateAndProcessFlashcards(flashcards, deckSize, topic)
+      } catch (parseError: any) {
+        // Second attempt: try to extract JSON array from the response
+        const jsonMatch = cleanResponse.match(/\[[\s\S]*\]/)
+        if (jsonMatch) {
+          try {
+            const flashcards = JSON.parse(jsonMatch[0]) as FlashcardData[]
+            return this.validateAndProcessFlashcards(flashcards, deckSize, topic)
+          } catch (extractError: any) {
+            // Continue to next attempt
+          }
+        }
+        
+        // Third attempt: try to fix common JSON syntax issues
+        try {
+          // Remove trailing commas and fix common issues
+          let fixedResponse = cleanResponse
+            .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
+            .replace(/,\s*}/g, '}') // Remove trailing commas before closing braces
+            .replace(/,\s*]/g, ']') // Remove trailing commas before closing brackets
+          
+          const flashcards = JSON.parse(fixedResponse) as FlashcardData[]
+          return this.validateAndProcessFlashcards(flashcards, deckSize, topic)
+        } catch (fixError: any) {
+          // Fourth attempt: try to repair truncated JSON
+          try {
+            const repairedResponse = this.repairTruncatedJSON(cleanResponse)
+            const flashcards = JSON.parse(repairedResponse) as FlashcardData[]
+            return this.validateAndProcessFlashcards(flashcards, deckSize, topic)
+          } catch (repairError: any) {
+            throw new Error(`JSON parsing failed after multiple attempts: ${parseError.message}`)
+          }
+        }
+      }
+    } catch (error: any) {
+      // Better fallback: Create more diverse flashcards from topic learning points
+      const fallbackCards: FlashcardData[] = topic.keyLearningPoints.slice(0, deckSize).map((point: string, index: number) => {
+        const cardTypes = ['qa', 'term_definition', 'fill_blank'] as const
+        const cardType = cardTypes[index % cardTypes.length]
+        
+        switch (cardType) {
+          case 'qa':
+            return {
+              id: index + 1,
+              type: 'qa' as const,
+              front: `What do you know about ${point}?`,
+              back: `${point} - This is an important concept in ${topic.title}.`,
+              difficulty: 'medium' as const
+            }
+          case 'term_definition':
+            return {
+              id: index + 1,
+              type: 'term_definition' as const,
+              front: point,
+              back: `A key concept related to ${topic.title}.`,
+              difficulty: 'medium' as const
+            }
+          case 'fill_blank':
+            return {
+              id: index + 1,
+              type: 'fill_blank' as const,
+              front: `${topic.title} involves understanding ___.`,
+              back: point,
+              difficulty: 'medium' as const
+            }
+          default:
+            return {
+              id: index + 1,
+              type: 'qa' as const,
+              front: `Tell me about ${point}.`,
+              back: point,
+              difficulty: 'medium' as const
+            }
+        }
+      })
+
+      // Add additional basic cards if we need more
+      while (fallbackCards.length < deckSize) {
+        const index = fallbackCards.length
+        fallbackCards.push({
+          id: index + 1,
+          type: 'qa' as const,
+          front: `What makes ${topic.title} interesting?`,
+          back: topic.description,
+          difficulty: 'easy' as const
+        })
+      }
+
+      return fallbackCards.slice(0, deckSize)
+    }
+  }
+
+  private validateAndProcessFlashcards(flashcards: FlashcardData[], deckSize: number, topic: Topic): FlashcardData[] {
+    // Validate and ensure we have the right number of cards
+    if (!Array.isArray(flashcards) || flashcards.length === 0) {
+      throw new Error(`Invalid flashcard format received: expected array, got ${typeof flashcards}`)
+    }
+
+    // Ensure each flashcard has required fields
+    const validatedFlashcards = flashcards.slice(0, deckSize).map((card: FlashcardData, index: number) => ({
+      id: index + 1,
+      type: card.type || 'qa',
+      front: card.front || `Question ${index + 1}`,
+      back: card.back || `Answer ${index + 1}`,
+      hint: card.hint,
+      difficulty: card.difficulty || 'medium'
+    }))
+
+    return validatedFlashcards
+  }
+
+  private repairTruncatedJSON(response: string): string {
+    // Find the last complete flashcard object
+    const flashcardPattern = /\{[^}]*"id":\s*\d+[^}]*\}/g
+    const matches = response.match(flashcardPattern)
+    
+    if (!matches || matches.length === 0) {
+      throw new Error('No valid flashcard objects found in response')
+    }
+    
+    // Take all complete flashcard objects
+    const completeFlashcards = matches.slice(0, -1) // Remove the last one as it might be incomplete
+    
+    // If we have enough complete flashcards, use them
+    if (completeFlashcards.length >= 5) {
+      const repairedJSON = `[${completeFlashcards.join(',')}]`
+      return repairedJSON
+    }
+    
+    // Try to complete the last flashcard if it's mostly complete
+    const lastMatch = matches[matches.length - 1]
+    if (lastMatch && lastMatch.includes('"id"') && lastMatch.includes('"type"') && lastMatch.includes('"front"')) {
+      // Check if it has the essential fields
+      const hasBack = lastMatch.includes('"back"')
+      const hasDifficulty = lastMatch.includes('"difficulty"')
+      
+      if (hasBack) {
+        // Complete the last flashcard with missing fields
+        let completedLast = lastMatch
+        if (!hasDifficulty) {
+          completedLast = completedLast.replace(/}$/, ', "difficulty": "medium"}')
+        }
+        if (!completedLast.includes('"hint"')) {
+          completedLast = completedLast.replace(/}$/, ', "hint": "help"}')
+        }
+        
+        const repairedJSON = `[${completeFlashcards.join(',')},${completedLast}]`
+        return repairedJSON
+      }
+    }
+    
+    // If we can't repair, use what we have
+    if (completeFlashcards.length > 0) {
+      const repairedJSON = `[${completeFlashcards.join(',')}]`
+      return repairedJSON
+    }
+    
+    throw new Error('Could not repair truncated JSON')
   }
 }
 
