@@ -206,20 +206,20 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
               <div className="text-center text-white text-sm mt-1 font-bold drop-shadow-lg">
                 📚 Section {currentSection + 1} of {lessonContent.length} 
               </div>
-            </div>
+        </div>
             <UserMenu />
           </div>
         </div>
 
         {/* Main Content Area */}
         <div className="flex-1  max-h-screen">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentSection}
-              initial={{ opacity: 0, x: 100 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -100 }}
-              transition={{ duration: 0.3 }}
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentSection}
+            initial={{ opacity: 0, x: 100 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -100 }}
+            transition={{ duration: 0.3 }}
               className="h-full p-3 sm:p-4"
             >
               {userSpeed === 1 && (
@@ -271,10 +271,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
                   totalSections={lessonContent.length}
                 />
               )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
+          </motion.div>
+        </AnimatePresence>
       </div>
+    </div>
     </DynamicBackground>
   )
 }
