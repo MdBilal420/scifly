@@ -9,10 +9,11 @@ import QuizScreen from './pages/QuizScreen'
 import ChatScreen from './pages/ChatScreen'
 import AchievementsScreen from './pages/AchievementsScreen'
 import ActivitySelectionScreen from './pages/ActivitySelectionScreen'
+import FlashcardScreen from './pages/FlashcardScreen'
 import LandingPage from './pages/LandingPage'
 import UserOnboardingDialog from './components/UserOnboardingDialog'
 
-type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity'
+type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity' | 'flashcards'
 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -50,6 +51,8 @@ const AppContent: React.FC = () => {
         return <LessonScreen onNavigate={handleNavigate} />
       case 'quiz':
         return <QuizScreen onNavigate={handleNavigate} />
+      case 'flashcards':
+        return <FlashcardScreen onNavigate={handleNavigate} />
       case 'chat':
         return <ChatScreen onNavigate={handleNavigate} />
       case 'achievements':

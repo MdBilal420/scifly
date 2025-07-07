@@ -204,10 +204,12 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
       case 'quiz':
         onNavigate('quiz')
         break
+      case 'flashcards':
+        onNavigate('flashcards')
+        break
       case 'chat':
         onNavigate('chat')
         break
-      case 'flashcards':
       case 'practice':
       case 'challenge':
       case 'simulation':
