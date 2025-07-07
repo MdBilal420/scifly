@@ -32,7 +32,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
 
   const handleTopicSelect = (topic: Topic) => {
     dispatch(setCurrentTopic(topic))
-    onNavigate('lesson')
+    onNavigate('activity')
   }
 
   return (
