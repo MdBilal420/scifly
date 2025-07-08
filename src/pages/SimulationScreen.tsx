@@ -9,6 +9,11 @@ import UserMenu from '../components/UserMenu'
 import SimbaMascot from '../components/SimbaMascot'
 import { MdArrowBack } from 'react-icons/md'
 import PhotosynthesisSimulation from '../components/simulations/PhotosynthesisSimulation'
+import SolarSystemSimulation from '../components/simulations/SolarSystemSimulation'
+import WaterCycleSimulation from '../components/simulations/WaterCycleSimulation'
+import ForcesMotionSimulation from '../components/simulations/ForcesMotionSimulation'
+import HumanBodySimulation from '../components/simulations/HumanBodySimulation'
+import EcosystemsSimulation from '../components/simulations/EcosystemsSimulation'
 
 interface SimulationScreenProps {
   onNavigate: (screen: string) => void
@@ -25,16 +30,39 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
 
   // Redirect if no topic selected
   if (!currentTopic) {
-    onNavigate('activity')
-    return null
+    // Use setTimeout to avoid navigation during render
+    setTimeout(() => onNavigate('activity'), 0)
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🔬</div>
+          <p className="text-gray-600">Loading simulation...</p>
+        </div>
+      </div>
+    )
   }
 
   const userSpeed = currentUser?.learningSpeed || 3
 
   // Get simulation configuration based on topic
   const getSimulationConfig = () => {
+    if (!currentTopic?.title) {
+      return {
+        title: 'Science Simulator',
+        description: 'Interactive exploration of scientific concepts',
+        icon: '🔬',
+        steps: [
+          { name: 'Observation', description: 'Watch and learn' },
+          { name: 'Experiment', description: 'Try different settings' },
+          { name: 'Analysis', description: 'Understand the results' },
+          { name: 'Conclusion', description: 'What did you discover?' }
+        ]
+      }
+    }
+    
     switch (currentTopic.title.toLowerCase()) {
-      case 'solar system':
+      case 'solar system & space':
+      case 'solar-system':
         return {
           title: 'Solar System Explorer',
           description: 'Explore the planets and their orbits',
@@ -51,6 +79,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
             { name: 'Neptune', description: 'The windiest planet' }
           ]
         }
+      case 'ecosystems & environment':
       case 'ecosystems':
         return {
           title: 'Ecosystem Builder',
@@ -63,7 +92,8 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
             { name: 'Decomposers', description: 'Break down dead organisms' }
           ]
         }
-      case 'weather patterns':
+      case 'water cycle & weather':
+      case 'water-cycle':
         return {
           title: 'Weather Simulator',
           description: 'Experiment with temperature and pressure',
@@ -129,7 +159,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
       setIsRunning(false)
       
       // Update progress
-      if (currentUser) {
+      if (currentUser && currentTopic) {
         dispatch(updateTopicProgress({
           userId: currentUser.id,
           topicId: currentTopic.id,
@@ -143,7 +173,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
   }
 
   // Show completion screen
-  if (isComplete) {
+  if (isComplete && currentTopic) {
     return (
       <DynamicBackground theme={currentTopic.backgroundTheme}>
         <div className="min-h-screen p-4">
@@ -212,6 +242,18 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
     )
   }
 
+  // Safety check for currentTopic
+  if (!currentTopic) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-4xl mb-4">🔬</div>
+          <p className="text-gray-600">Loading simulation...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <DynamicBackground theme={currentTopic.backgroundTheme}>
       <div className="min-h-screen p-4">
@@ -244,26 +286,6 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
           <UserMenu />
         </motion.header>
 
-        {/* Progress */}
-        <motion.div
-          className="mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <ProgressBar
-            current={simulationStep + 1}
-            total={config.steps.length}
-            label="Steps"
-            color="accent"
-            animate={true}
-          />
-          
-          <div className="flex items-center justify-center gap-4 mt-3 text-white/80 text-sm">
-            <span>Step {simulationStep + 1} of {config.steps.length}</span>
-          </div>
-        </motion.div>
-
         {/* Split Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 h-[calc(100vh-200px)]">
           {/* Left Side - Simulation */}
@@ -276,16 +298,16 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
             <div className="text-center mb-4">
               <div className="text-4xl mb-2">{config.icon}</div>
               <h2 className="font-comic text-lg font-bold text-white mb-1">
-                {config.steps[simulationStep].name}
+                {config.steps[simulationStep]?.name || 'Step'}
               </h2>
               <p className="text-white/70 text-sm">
-                {config.steps[simulationStep].description}
+                {config.steps[simulationStep]?.description || 'Explore and learn'}
               </p>
             </div>
 
             {/* Simulation Canvas */}
             <div className="flex-1 bg-white/5 backdrop-blur rounded-2xl p-4 mb-4 min-h-0">
-              {currentTopic.title.toLowerCase() === 'plants & photosynthesis' ? (
+              {currentTopic?.title?.toLowerCase() === 'plants & photosynthesis' || currentTopic?.title?.toLowerCase() === 'plants-photosynthesis' ? (
                 <PhotosynthesisSimulation
                   userSpeed={userSpeed}
                   onStepComplete={(step) => {
@@ -293,7 +315,132 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
                     if (step === 4) {
                       setIsComplete(true)
                       setIsRunning(false)
-                      if (currentUser) {
+                      if (currentUser && currentTopic) {
+                        dispatch(updateTopicProgress({
+                          userId: currentUser.id,
+                          topicId: currentTopic.id,
+                          progressData: {
+                            progress_percentage: 100,
+                            completed: true
+                          }
+                        }))
+                      }
+                    }
+                  }}
+                  onComplete={() => {
+                    setIsComplete(true)
+                    setIsRunning(false)
+                  }}
+                />
+              ) : currentTopic?.title?.toLowerCase() === 'solar system & space' || currentTopic?.title?.toLowerCase() === 'solar-system' ? (
+                <SolarSystemSimulation
+                  userSpeed={userSpeed}
+                  onStepComplete={(step) => {
+                    setSimulationStep(step)
+                    if (step === 8) {
+                      setIsComplete(true)
+                      setIsRunning(false)
+                      if (currentUser && currentTopic) {
+                        dispatch(updateTopicProgress({
+                          userId: currentUser.id,
+                          topicId: currentTopic.id,
+                          progressData: {
+                            progress_percentage: 100,
+                            completed: true
+                          }
+                        }))
+                      }
+                    }
+                  }}
+                  onComplete={() => {
+                    setIsComplete(true)
+                    setIsRunning(false)
+                  }}
+                />
+              ) : currentTopic?.title?.toLowerCase() === 'water cycle & weather' || currentTopic?.title?.toLowerCase() === 'water-cycle' ? (
+                <WaterCycleSimulation
+                  userSpeed={userSpeed}
+                  onStepComplete={(step) => {
+                    setSimulationStep(step)
+                    if (step === 3) {
+                      setIsComplete(true)
+                      setIsRunning(false)
+                      if (currentUser && currentTopic) {
+                        dispatch(updateTopicProgress({
+                          userId: currentUser.id,
+                          topicId: currentTopic.id,
+                          progressData: {
+                            progress_percentage: 100,
+                            completed: true
+                          }
+                        }))
+                      }
+                    }
+                  }}
+                  onComplete={() => {
+                    setIsComplete(true)
+                    setIsRunning(false)
+                  }}
+                />
+              ) : currentTopic?.title?.toLowerCase() === 'forces & motion' || currentTopic?.title?.toLowerCase() === 'forces-motion' ? (
+                <ForcesMotionSimulation
+                  userSpeed={userSpeed}
+                  onStepComplete={(step) => {
+                    setSimulationStep(step)
+                    if (step === 3) {
+                      setIsComplete(true)
+                      setIsRunning(false)
+                      if (currentUser && currentTopic) {
+                        dispatch(updateTopicProgress({
+                          userId: currentUser.id,
+                          topicId: currentTopic.id,
+                          progressData: {
+                            progress_percentage: 100,
+                            completed: true
+                          }
+                        }))
+                      }
+                    }
+                  }}
+                  onComplete={() => {
+                    setIsComplete(true)
+                    setIsRunning(false)
+                  }}
+                />
+              ) : currentTopic?.title?.toLowerCase() === 'human body systems' || currentTopic?.title?.toLowerCase() === 'human-body' ? (
+                <HumanBodySimulation
+                  userSpeed={userSpeed}
+                  onStepComplete={(step) => {
+                    setSimulationStep(step)
+                    if (step === 3) {
+                      setIsComplete(true)
+                      setIsRunning(false)
+                      if (currentUser && currentTopic) {
+                        dispatch(updateTopicProgress({
+                          userId: currentUser.id,
+                          topicId: currentTopic.id,
+                          progressData: {
+                            progress_percentage: 100,
+                            completed: true
+                          }
+                        }))
+                      }
+                    }
+                  }}
+                  onComplete={() => {
+                    setIsComplete(true)
+                    setIsRunning(false)
+                  }}
+                />
+              ) : currentTopic?.title?.toLowerCase() === 'ecosystems & environment' || currentTopic?.title?.toLowerCase() === 'ecosystems' ? (
+                <EcosystemsSimulation
+                  userSpeed={userSpeed}
+                  onStepComplete={(step) => {
+                    setSimulationStep(step)
+                    if (step === 3) {
+                      setIsComplete(true)
+                      setIsRunning(false)
+                      if (currentUser && currentTopic) {
                         dispatch(updateTopicProgress({
                           userId: currentUser.id,
                           topicId: currentTopic.id,
@@ -385,7 +532,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
 
             <div className="flex-1 overflow-y-auto">
               {/* Topic-specific educational content */}
-              {currentTopic.title.toLowerCase() === 'plants & photosynthesis' ? (
+              {currentTopic.title.toLowerCase() === 'plants & photosynthesis' || currentTopic.title.toLowerCase() === 'plants-photosynthesis' ? (
                 <div className="space-y-4">
                   <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border-2 border-green-200">
                     <h3 className="text-lg font-bold text-green-800 mb-3">🔬 How Photosynthesis Works</h3>
@@ -437,14 +584,189 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
                       <p>• <strong>Energy Source:</strong> Fossil fuels come from ancient plants</p>
                     </div>
                   </div>
-
+                </div>
+              ) : currentTopic.title.toLowerCase() === 'solar system & space' || currentTopic.title.toLowerCase() === 'solar-system' ? (
+                <div className="space-y-4">
                   <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-xl p-4 border-2 border-purple-200">
-                    <h3 className="text-lg font-bold text-purple-800 mb-3">🔍 Fun Facts</h3>
+                    <h3 className="text-lg font-bold text-purple-800 mb-3">🪐 Our Solar System</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      <strong>Our solar system is a vast cosmic neighborhood!</strong> It contains the Sun, eight planets, moons, asteroids, comets, and other celestial objects all held together by gravity.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">☀️</span>
+                        <span><strong>Sun:</strong> The star at the center of our solar system</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🪐</span>
+                        <span><strong>Planets:</strong> Eight worlds orbiting the Sun</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🌙</span>
+                        <span><strong>Moons:</strong> Natural satellites orbiting planets</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">☄️</span>
+                        <span><strong>Asteroids:</strong> Rocky objects in the asteroid belt</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
+                    <h3 className="text-lg font-bold text-blue-800 mb-3">🌍 Planet Types</h3>
                     <div className="space-y-2 text-sm text-gray-700">
-                      <p>• <strong>Chlorophyll:</strong> The green pigment that captures sunlight</p>
-                      <p>• <strong>Stomata:</strong> Tiny holes in leaves for gas exchange</p>
-                      <p>• <strong>Xylem:</strong> Tubes that carry water from roots to leaves</p>
-                      <p>• <strong>Phloem:</strong> Tubes that carry glucose throughout the plant</p>
+                      <p>• <strong>Terrestrial:</strong> Rocky planets (Mercury, Venus, Earth, Mars)</p>
+                      <p>• <strong>Gas Giants:</strong> Large planets made of gas (Jupiter, Saturn)</p>
+                      <p>• <strong>Ice Giants:</strong> Cold gas planets (Uranus, Neptune)</p>
+                      <p>• <strong>Dwarf Planets:</strong> Smaller objects like Pluto</p>
+                    </div>
+                  </div>
+                </div>
+              ) : currentTopic.title.toLowerCase() === 'water cycle & weather' || currentTopic.title.toLowerCase() === 'water-cycle' ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
+                    <h3 className="text-lg font-bold text-blue-800 mb-3">💧 The Water Cycle</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      <strong>Water is constantly moving around our planet!</strong> The water cycle describes how water evaporates from the surface, forms clouds, falls as precipitation, and returns to the surface.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">☀️</span>
+                        <span><strong>Evaporation:</strong> Sun heats water into vapor</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">☁️</span>
+                        <span><strong>Condensation:</strong> Water vapor forms clouds</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🌧️</span>
+                        <span><strong>Precipitation:</strong> Water falls as rain/snow</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🌊</span>
+                        <span><strong>Collection:</strong> Water returns to oceans/lakes</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-4 border-2 border-gray-200">
+                    <h3 className="text-lg font-bold text-gray-800 mb-3">🌤️ Weather Factors</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      <p>• <strong>Temperature:</strong> How hot or cold the air is</p>
+                      <p>• <strong>Humidity:</strong> Amount of water vapor in the air</p>
+                      <p>• <strong>Pressure:</strong> Weight of air pressing down</p>
+                      <p>• <strong>Wind:</strong> Movement of air from high to low pressure</p>
+                    </div>
+                  </div>
+                </div>
+              ) : currentTopic.title.toLowerCase() === 'forces & motion' || currentTopic.title.toLowerCase() === 'forces-motion' ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-red-50 to-red-100 rounded-xl p-4 border-2 border-red-200">
+                    <h3 className="text-lg font-bold text-red-800 mb-3">⚡ Forces & Motion</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      <strong>Forces make things move and change!</strong> Understanding forces helps us explain how everything from falling apples to rocket launches works.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⬇️</span>
+                        <span><strong>Gravity:</strong> Pulls objects toward Earth</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🛑</span>
+                        <span><strong>Friction:</strong> Slows down moving objects</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">📐</span>
+                        <span><strong>Inclined Plane:</strong> Makes work easier</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🕰️</span>
+                        <span><strong>Pendulum:</strong> Swings back and forth</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-yellow-50 to-yellow-100 rounded-xl p-4 border-2 border-yellow-200">
+                    <h3 className="text-lg font-bold text-yellow-800 mb-3">🔧 Simple Machines</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      <p>• <strong>Lever:</strong> Uses a fulcrum to lift heavy objects</p>
+                      <p>• <strong>Pulley:</strong> Changes direction of force</p>
+                      <p>• <strong>Wheel & Axle:</strong> Reduces friction for movement</p>
+                      <p>• <strong>Inclined Plane:</strong> Makes lifting easier</p>
+                    </div>
+                  </div>
+                </div>
+              ) : currentTopic.title.toLowerCase() === 'human body systems' || currentTopic.title.toLowerCase() === 'human-body' ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-pink-50 to-pink-100 rounded-xl p-4 border-2 border-pink-200">
+                    <h3 className="text-lg font-bold text-pink-800 mb-3">🫀 Human Body Systems</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      <strong>Your body is an amazing machine!</strong> Different systems work together to keep you healthy, moving, and alive.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">❤️</span>
+                        <span><strong>Circulatory:</strong> Pumps blood throughout body</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🫁</span>
+                        <span><strong>Respiratory:</strong> Brings oxygen to cells</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🍽️</span>
+                        <span><strong>Digestive:</strong> Breaks down food for energy</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🦴</span>
+                        <span><strong>Skeletal:</strong> Provides structure and protection</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
+                    <h3 className="text-lg font-bold text-blue-800 mb-3">💪 Staying Healthy</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      <p>• <strong>Exercise:</strong> Keeps muscles and heart strong</p>
+                      <p>• <strong>Good Nutrition:</strong> Provides energy and building blocks</p>
+                      <p>• <strong>Rest:</strong> Allows body to repair and grow</p>
+                      <p>• <strong>Hygiene:</strong> Prevents illness and infection</p>
+                    </div>
+                  </div>
+                </div>
+              ) : currentTopic.title.toLowerCase() === 'ecosystems & environment' || currentTopic.title.toLowerCase() === 'ecosystems' ? (
+                <div className="space-y-4">
+                  <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-xl p-4 border-2 border-green-200">
+                    <h3 className="text-lg font-bold text-green-800 mb-3">🌍 Ecosystems</h3>
+                    <p className="text-gray-700 text-sm mb-3">
+                      <strong>Ecosystems are communities of living things!</strong> All organisms in an ecosystem depend on each other and their environment to survive.
+                    </p>
+                    <div className="grid grid-cols-1 gap-2 text-xs">
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🌱</span>
+                        <span><strong>Producers:</strong> Plants that make their own food</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🦌</span>
+                        <span><strong>Consumers:</strong> Animals that eat other organisms</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">🦠</span>
+                        <span><strong>Decomposers:</strong> Break down dead organisms</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-lg">⚡</span>
+                        <span><strong>Energy Flow:</strong> Moves through food chains</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-xl p-4 border-2 border-blue-200">
+                    <h3 className="text-lg font-bold text-blue-800 mb-3">🛡️ Environmental Protection</h3>
+                    <div className="space-y-2 text-sm text-gray-700">
+                      <p>• <strong>Reduce Waste:</strong> Use less and recycle more</p>
+                      <p>• <strong>Conserve Energy:</strong> Turn off lights and electronics</p>
+                      <p>• <strong>Protect Habitats:</strong> Don't disturb wildlife homes</p>
+                      <p>• <strong>Plant Trees:</strong> Help clean the air</p>
                     </div>
                   </div>
                 </div>
