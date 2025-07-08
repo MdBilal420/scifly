@@ -45,6 +45,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             icon: '🧩',
             color: 'from-green-500 to-green-600',
             primary: false
+          },
+          {
+            id: 'simulation',
+            title: 'Interactive Simulation',
+            description: 'Explore with hands-on experiments',
+            icon: '🔬',
+            color: 'from-indigo-500 to-indigo-600',
+            primary: false
           }
         ]
       case 2:
@@ -71,6 +79,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             description: 'Quick review with visual cards',
             icon: '🃏',
             color: 'from-purple-500 to-purple-600',
+            primary: false
+          },
+          {
+            id: 'simulation',
+            title: 'Interactive Simulation',
+            description: 'Hands-on learning experiments',
+            icon: '🔬',
+            color: 'from-indigo-500 to-indigo-600',
             primary: false
           }
         ]
@@ -99,6 +115,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             icon: '🔬',
             color: 'from-orange-500 to-orange-600',
             primary: false
+          },
+          {
+            id: 'simulation',
+            title: 'Interactive Simulation',
+            description: 'Advanced interactive models',
+            icon: '🌐',
+            color: 'from-indigo-500 to-indigo-600',
+            primary: false
           }
         ]
       case 4:
@@ -125,6 +149,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             description: 'Deep dive with AI tutor',
             icon: '💭',
             color: 'from-cyan-500 to-cyan-600',
+            primary: false
+          },
+          {
+            id: 'simulation',
+            title: 'Interactive Simulation',
+            description: 'Complex scientific modeling',
+            icon: '🌐',
+            color: 'from-indigo-500 to-indigo-600',
             primary: false
           },
           {
@@ -188,6 +220,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             icon: '🧩',
             color: 'from-green-500 to-green-600',
             primary: false
+          },
+          {
+            id: 'simulation',
+            title: 'Interactive Simulation',
+            description: 'Explore with hands-on experiments',
+            icon: '🔬',
+            color: 'from-indigo-500 to-indigo-600',
+            primary: false
           }
         ]
     }
@@ -210,9 +250,11 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
       case 'chat':
         onNavigate('chat')
         break
+      case 'simulation':
+        onNavigate('simulation')
+        break
       case 'practice':
       case 'challenge':
-      case 'simulation':
       case 'research':
         // These are future features - for now, navigate to lesson
         console.log(`${activityId} mode selected - redirecting to lesson for now`)
