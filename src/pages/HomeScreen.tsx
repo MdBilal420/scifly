@@ -184,7 +184,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
             whileTap={{ scale: 0.95 }}
           >
             <div className="text-2xl mb-2">💭</div>
-            <p className="font-bold text-gray-700 text-sm">Fun Facts</p>
+            <p className="font-bold text-gray-700 text-sm">Ask Simba</p>
           </motion.button>
 
           <motion.button
