@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppSelector, useAppDispatch } from '../hooks/redux'
-import { answerQuestion, nextQuestion, resetQuiz } from '../features/quiz/quizSlice'
+import { resetQuiz } from '../features/quiz/quizSlice'
 import { unlockAchievement } from '../features/achievements/achievementSlice'
 import { generateQuizQuestions, clearErrors } from '../features/topics/topicsSlice'
 import QuizCard from '../components/QuizCard'
@@ -17,7 +17,6 @@ interface QuizScreenProps {
 
 const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   const dispatch = useAppDispatch()
-  const quizState = useAppSelector((state) => state.quiz)
   const { currentTopic, quizQuestions, isGeneratingQuiz, quizError } = useAppSelector((state) => state.topics)
   const [selectedAnswer, setSelectedAnswer] = useState<number | undefined>(undefined)
   const [showResult, setShowResult] = useState(false)
