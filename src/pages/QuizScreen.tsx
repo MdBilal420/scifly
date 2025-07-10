@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppSelector, useAppDispatch } from '../hooks/redux'
-import { startQuiz, answerQuestion, nextQuestion, resetQuiz } from '../features/quiz/quizSlice'
+import { resetQuiz } from '../features/quiz/quizSlice'
 import { unlockAchievement } from '../features/achievements/achievementSlice'
-import { generateQuizQuestions } from '../features/topics/topicsSlice'
+import { generateQuizQuestions, clearErrors } from '../features/topics/topicsSlice'
 import QuizCard from '../components/QuizCard'
 import PrimaryButton from '../components/PrimaryButton'
 import ProgressBar from '../components/ProgressBar'
 import SimbaMascot from '../components/SimbaMascot'
 import DynamicBackground from '../components/DynamicBackground'
+import UserMenu from '../components/UserMenu'
 
 interface QuizScreenProps {
   onNavigate: (screen: string) => void
@@ -16,7 +17,6 @@ interface QuizScreenProps {
 
 const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   const dispatch = useAppDispatch()
-  const quizState = useAppSelector((state) => state.quiz)
   const { currentTopic, quizQuestions, isGeneratingQuiz, quizError } = useAppSelector((state) => state.topics)
   const [selectedAnswer, setSelectedAnswer] = useState<number | undefined>(undefined)
   const [showResult, setShowResult] = useState(false)
@@ -24,6 +24,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0)
   const [score, setScore] = useState(0)
   const [isQuizComplete, setIsQuizComplete] = useState(false)
+  const { currentUser } = useAppSelector((state) => state.user)
 
   useEffect(() => {
     if (!currentTopic) {
@@ -31,14 +32,14 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
       return
     }
 
-    if (quizQuestions.length === 0 && !isGeneratingQuiz) {
+    if (quizQuestions.length === 0 && !isGeneratingQuiz && !quizError) {
       dispatch(generateQuizQuestions(currentTopic))
     }
 
     return () => {
       dispatch(resetQuiz())
     }
-  }, [dispatch, currentTopic, quizQuestions.length, isGeneratingQuiz, onNavigate])
+  }, [dispatch, currentTopic?.id, isGeneratingQuiz, quizError, onNavigate, quizQuestions.length])
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {
@@ -76,16 +77,19 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
             <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
             <p className="text-gray-600 mb-4">I couldn't generate the quiz questions. Let's try again!</p>
             <PrimaryButton
-              onClick={() => dispatch(generateQuizQuestions(currentTopic))}
+              onClick={() => {
+                dispatch(clearErrors())
+                dispatch(generateQuizQuestions(currentTopic))
+              }}
               className="w-full mb-2"
             >
               Try Again
             </PrimaryButton>
             <button
-              onClick={() => onNavigate('topics')}
+              onClick={() => onNavigate('activity')}
               className="text-gray-500 text-sm underline"
             >
-              Choose Different Topic
+              Choose Different Activity
             </button>
           </div>
         </div>
@@ -94,7 +98,6 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   }
 
   const currentQuestion = quizQuestions[currentQuestionIndex]
-  const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (hasAnswered) return
@@ -118,8 +121,11 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
     } else {
       // Quiz completed
       setIsQuizComplete(true)
-      if (score === quizQuestions.length) {
-        dispatch(unlockAchievement('quiz-master'))
+      if (score === quizQuestions.length && currentUser) {
+        dispatch(unlockAchievement({
+          userId: currentUser.id,
+          achievementKey: 'quiz_master'
+        }))
       }
     }
   }
@@ -168,12 +174,12 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
 
             <div className="space-y-3">
               <PrimaryButton
-                onClick={() => onNavigate('lesson')}
+                onClick={() => onNavigate('activity')}
                 className="w-full"
                 variant="secondary"
                 icon="📚"
               >
-                Review Lesson
+                Try Another Activity
               </PrimaryButton>
               
               <PrimaryButton
@@ -202,7 +208,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
       >
         <motion.button
           className="bg-white/20 backdrop-blur rounded-full p-3"
-          onClick={() => onNavigate('home')}
+          onClick={() => onNavigate('activity')}
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.9 }}
         >
@@ -218,10 +224,15 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
           />
         </div>
         
-        <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2">
-          <span className="text-white font-bold text-sm">
-            {currentQuestionIndex + 1}/{quizQuestions.length}
-          </span>
+        <div className="flex items-center gap-3">
+          <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2">
+            <span className="text-white font-bold text-sm">
+              {currentQuestionIndex + 1}/{quizQuestions.length}
+            </span>
+          </div>
+          
+          {/* User Menu */}
+          <UserMenu />
         </div>
       </motion.header>
 

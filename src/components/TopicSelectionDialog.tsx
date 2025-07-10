@@ -257,7 +257,7 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                         </h3>
 
                         {/* Difficulty Indicator */}
-                        <div className="flex items-center justify-center gap-2 mb-2">
+                        <div className="flex items-center justify-center gap-2 mb-3">
                           <div className={`w-2 h-2 rounded-full ${difficultyColors[topic.difficulty]}`} />
                           <span className="text-white/70 text-xs">
                             {difficultyLabels[topic.difficulty]}
@@ -265,7 +265,7 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                         </div>
 
                         {/* Key Learning Points */}
-                        <div className="space-y-1">
+                        <div className="space-y-1 mb-3">
                           {topic.keyLearningPoints.slice(0, 1).map((point, i) => (
                             <div key={i} className="flex items-center gap-2">
                               <div className="w-1 h-1 bg-white/60 rounded-full flex-shrink-0" />
@@ -278,6 +278,29 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                             </div>
                           )}
                         </div>
+
+                        {/* Start Learning Button - Only shown when selected */}
+                        <AnimatePresence>
+                          {selectedTopic?.id === topic.id && (
+                            <motion.div
+                              className="mt-3"
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              exit={{ opacity: 0, y: -20 }}
+                              transition={{ duration: 0.3 }}
+                              onClick={(e) => e.stopPropagation()} // Prevent card click
+                            >
+                              <PrimaryButton
+                                onClick={handleStartLearning}
+                                size="sm"
+                                icon="🚀"
+                                className="w-full"
+                              >
+                                Start Learning!
+                              </PrimaryButton>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
 
                         {/* Selection Indicator */}
                         {selectedTopic?.id === topic.id && (
@@ -294,55 +317,6 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                     ))}
                   </AnimatePresence>
                 </motion.div>
-
-                {/* Selected Topic Details & Action */}
-                <AnimatePresence>
-                  {selectedTopic && (
-                    <motion.div
-                      className="bg-white/95 backdrop-blur rounded-2xl p-4 shadow-xl card-3d glass-3d"
-                      initial={{ opacity: 0, y: 50 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -50 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      <div className="flex items-center gap-3 mb-3">
-                        <div className="text-2xl">{selectedTopic.icon}</div>
-                        <div className="flex-1">
-                          <h3 className="font-comic font-bold text-gray-800 text-lg">
-                            {selectedTopic.title}
-                          </h3>
-                          <p className="text-gray-600 text-sm">{selectedTopic.description}</p>
-                        </div>
-                      </div>
-
-                      <div className="flex gap-3">
-                        <div className="flex-1">
-                          <div className="grid grid-cols-2 gap-3 text-sm mb-3">
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500">Duration:</span>
-                              <span className="font-medium text-gray-700">{selectedTopic.estimatedTime} min</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <span className="text-gray-500">Level:</span>
-                              <div className="flex items-center gap-1">
-                                <div className={`w-2 h-2 rounded-full ${difficultyColors[selectedTopic.difficulty]}`} />
-                                <span className="font-medium text-gray-700">{difficultyLabels[selectedTopic.difficulty]}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <PrimaryButton
-                          onClick={handleStartLearning}
-                          size="md"
-                          icon="🚀"
-                          className="self-end"
-                        >
-                          Start Learning!
-                        </PrimaryButton>
-                      </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
 
                 {/* Simba's Encouragement */}
                 {!selectedTopic && (
