@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
 import { signUpUser, signInUser, clearError } from '../features/user/userSlice'
-import PrimaryButton from './PrimaryButton'
 import SimbaMascot from './SimbaMascot'
 
 interface AuthDialogProps {

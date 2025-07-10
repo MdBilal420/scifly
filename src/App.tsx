@@ -19,7 +19,7 @@ type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity' 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
   const dispatch = useAppDispatch()
-  const { currentUser, isAuthenticated, isLoading, showOnboarding } = useAppSelector((state) => state.user)
+  const { isAuthenticated, isLoading } = useAppSelector((state) => state.user)
 
   // Load user data and setup auth listener on app initialization
   useEffect(() => {

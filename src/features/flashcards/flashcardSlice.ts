@@ -1,4 +1,4 @@
-import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit'
 import { FlashcardData } from '../../services/groqAPI'
 import groqAPI from '../../services/groqAPI'
 import { Topic } from '../../data/topics'

@@ -125,7 +125,7 @@ export const updateAchievementProgress = createAsyncThunk(
       const unlocked = progress >= achievement.max_progress
       
       // Update progress in database
-      const updatedUserAchievement = await achievementsAPI.updateAchievementProgress(
+      await achievementsAPI.updateAchievementProgress(
         userId,
         achievement.id,
         progress,
@@ -177,7 +177,7 @@ export const unlockAchievement = createAsyncThunk(
       }
 
       // Unlock achievement
-      const updatedUserAchievement = await achievementsAPI.updateAchievementProgress(
+      await achievementsAPI.updateAchievementProgress(
         userId,
         achievement.id,
         achievement.max_progress,

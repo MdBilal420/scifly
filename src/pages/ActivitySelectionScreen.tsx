@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSelector } from '../hooks/redux'
-import { getModesForSpeed } from '../config/learningModes'
+// import { getModesForSpeed } from '../config/learningModes'
 import PrimaryButton from '../components/PrimaryButton'
 import DynamicBackground from '../components/DynamicBackground'
 import UserMenu from '../components/UserMenu'
@@ -29,7 +29,6 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
   }
 
   const userSpeed = currentUser?.learningSpeed || 3
-  const speedConfig = getModesForSpeed(userSpeed)
 
   // Get speed-specific activity options
   const getActivityOptions = () => {

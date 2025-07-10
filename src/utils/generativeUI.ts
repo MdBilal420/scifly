@@ -1,4 +1,4 @@
-import { getModesForSpeed, SpeedModeMapping, LearningMode } from '../config/learningModes'
+import { getModesForSpeed, SpeedModeMapping } from '../config/learningModes'
 
 export interface AdaptiveContent {
   text: string

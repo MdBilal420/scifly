@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit'
 import { getAdaptiveLesson, trackUserInteraction, suggestOptimalSpeed } from '../../services/adaptiveAPI'
-import type { AdaptiveLessonRequest, AdaptiveLessonResponse, UserInteraction } from '../../services/adaptiveAPI'
+import type { AdaptiveLessonRequest, UserInteraction } from '../../services/adaptiveAPI'
 
 export interface AdaptedContent {
   lessonId: string
