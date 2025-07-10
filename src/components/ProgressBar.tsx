@@ -20,7 +20,10 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
   showPercentage = true,
   animate = true
 }) => {
-  const percentage = Math.min((current / total) * 100, 100)
+  // Ensure valid numbers and handle edge cases
+  const safeCurrent = Math.max(0, Number(current) || 0)
+  const safeTotal = Math.max(1, Number(total) || 1)
+  const percentage = Math.min((safeCurrent / safeTotal) * 100, 100)
   
   const colorClasses = {
     primary: 'bg-primary-500',
@@ -42,7 +45,7 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
           <span className="text-sm font-medium text-gray-700">{label}</span>
           {showPercentage && (
             <span className="text-sm font-bold text-gray-600">
-              {current}/{total} {percentage.toFixed(0)}%
+              {safeCurrent}/{safeTotal} {isNaN(percentage) ? '0' : percentage.toFixed(0)}%
             </span>
           )}
         </div>
@@ -51,8 +54,8 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       <div className={`w-full bg-gray-200 rounded-full ${sizeClasses[size]} overflow-hidden progress-3d`}>
         <motion.div
           className={`${colorClasses[color]} ${sizeClasses[size]} rounded-full relative`}
-          initial={animate ? { width: 0 } : { width: `${percentage}%` }}
-          animate={{ width: `${percentage}%` }}
+          initial={animate ? { width: '0%' } : { width: `${isNaN(percentage) ? 0 : percentage}%` }}
+          animate={{ width: `${isNaN(percentage) ? 0 : percentage}%` }}
           transition={{ duration: animate ? 1 : 0, ease: "easeOut" }}
         >
           {/* Shine effect */}
@@ -72,13 +75,13 @@ const ProgressBar: React.FC<ProgressBarProps> = ({
       </div>
       
       {/* Milestone indicators */}
-      {total > 1 && (
+      {safeTotal > 1 && safeTotal <= 20 && (
         <div className="flex justify-between mt-1">
-          {Array.from({ length: total }, (_, index) => (
+          {Array.from({ length: safeTotal }, (_, index) => (
             <div
               key={index}
               className={`w-2 h-2 rounded-full ${
-                index < current ? colorClasses[color] : 'bg-gray-300'
+                index < safeCurrent ? colorClasses[color] : 'bg-gray-300'
               }`}
             />
           ))}

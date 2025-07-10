@@ -1,31 +1,35 @@
 import React, { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useAppDispatch, useAppSelector } from '../hooks/redux'
-import { updateLessonProgress } from '../features/progress/progressSlice'
-import { generateLessonContent } from '../features/topics/topicsSlice'
+import { updateTopicProgress } from '../features/progress/progressSlice'
+import { generateLessonContent, clearErrors } from '../features/topics/topicsSlice'
 import SimbaMascot from '../components/SimbaMascot'
 import PrimaryButton from '../components/PrimaryButton'
 import ProgressBar from '../components/ProgressBar'
 import DynamicBackground from '../components/DynamicBackground'
+import UserMenu from '../components/UserMenu'
+import { MdArrowBack } from 'react-icons/md'
+
+import { Speed1Layout, Speed2Layout, Speed3Layout, Speed4Layout, Speed5Layout } from '../components/layouts/SpeedSpecificLayouts'
+// Import adaptive styles to ensure they're loaded
+import '../styles/adaptiveComponents.css'
 
 interface LessonScreenProps {
   onNavigate: (screen: string) => void
 }
 
-
-
 const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const [currentSection, setCurrentSection] = useState(0)
-  const [isRevealed, setIsRevealed] = useState(false)
   const dispatch = useAppDispatch()
   
   const { currentTopic, lessonContent, isGeneratingContent, contentError } = useAppSelector((state) => state.topics)
+  const { currentUser } = useAppSelector((state) => state.user)
 
   useEffect(() => {
-    if (currentTopic && lessonContent.length === 0 && !isGeneratingContent) {
+    if (currentTopic) {
       dispatch(generateLessonContent(currentTopic))
     }
-  }, [currentTopic, lessonContent.length, isGeneratingContent, dispatch])
+  }, [currentTopic?.id, dispatch])
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {
@@ -34,7 +38,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   }
 
   // Show loading state while generating content
-  if (isGeneratingContent || lessonContent.length === 0) {
+  if (isGeneratingContent) {
     return (
       <DynamicBackground theme={currentTopic.backgroundTheme}>
         <div className="min-h-screen flex items-center justify-center p-4">
@@ -53,6 +57,38 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
     )
   }
 
+  // Show error state if no content available
+  if (!lessonContent || lessonContent.length === 0) {
+    return (
+      <DynamicBackground theme={currentTopic.backgroundTheme}>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="text-center bg-white/90 backdrop-blur rounded-3xl p-6 max-w-md">
+            <div className="text-6xl mb-4">📚</div>
+            <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">No Lesson Content Available</h2>
+            <p className="text-gray-600 mb-4">
+              We couldn't find any lesson content for {currentTopic.title}. 
+              This might be because the content hasn't been generated yet or there was an issue loading it.
+            </p>
+            <PrimaryButton
+              onClick={() => {
+                dispatch(generateLessonContent(currentTopic))
+              }}
+              className="w-full mb-2"
+            >
+              Generate Lesson Content
+            </PrimaryButton>
+            <button
+              onClick={() => onNavigate('activity')}
+              className="text-gray-500 text-sm underline"
+            >
+              Choose Different Activity
+            </button>
+          </div>
+        </div>
+      </DynamicBackground>
+    )
+  }
+
   // Show error state if content generation failed
   if (contentError) {
     return (
@@ -63,16 +99,20 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
             <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
             <p className="text-gray-600 mb-4">I couldn't generate the lesson content. Let's try again!</p>
             <PrimaryButton
-              onClick={() => dispatch(generateLessonContent(currentTopic))}
+              onClick={() => {
+                // Clear error first, then retry
+                dispatch(clearErrors())
+                dispatch(generateLessonContent(currentTopic))
+              }}
               className="w-full mb-2"
             >
               Try Again
             </PrimaryButton>
             <button
-              onClick={() => onNavigate('topics')}
+              onClick={() => onNavigate('activity')}
               className="text-gray-500 text-sm underline"
             >
-              Choose Different Topic
+              Choose Different Activity
             </button>
           </div>
         </div>
@@ -81,149 +121,156 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   }
 
   const currentContent = lessonContent[currentSection]
-  const progress = ((currentSection + 1) / lessonContent.length) * 100
+
+  // Safety check - if no current content, show loading
+  if (!currentContent) {
+    return (
+      <DynamicBackground theme={currentTopic.backgroundTheme}>
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="text-center">
+            <SimbaMascot size="lg" animate={true} />
+            <motion.div
+              className="mt-4 text-white text-xl font-comic"
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              Loading lesson content... 🦁
+            </motion.div>
+          </div>
+        </div>
+      </DynamicBackground>
+    )
+  }
 
   const handleNext = () => {
+    if (!currentUser || !lessonContent) return
+
     if (currentSection < lessonContent.length - 1) {
       setCurrentSection(currentSection + 1)
-      setIsRevealed(false)
-      dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: progress + (100 / lessonContent.length) }))
+      // Track progress at topic level (sections within a topic)
+      dispatch(updateTopicProgress({ 
+        userId: currentUser.id, 
+        topicId: currentTopic.id, 
+        progressData: { 
+          progress_percentage: currentProgress 
+        } 
+      }))
     } else {
-      dispatch(updateLessonProgress({ lessonId: currentTopic.id, progress: 100 }))
-      onNavigate('home')
+      // Complete the entire topic
+      dispatch(updateTopicProgress({ 
+        userId: currentUser.id, 
+        topicId: currentTopic.id, 
+        progressData: { 
+          progress_percentage: 100,
+          completed: true 
+        } 
+      }))
+      onNavigate('activity')
     }
   }
 
-  const handleInteraction = () => {
-    setIsRevealed(true)
+  const handlePrevious = () => {
+    if (currentSection > 0) {
+      setCurrentSection(currentSection - 1)
+    } else {
+      onNavigate('activity')
+    }
   }
 
+  // Get user speed to determine layout
+  const userSpeed = currentUser?.learningSpeed || 3
+
+  // Calculate progress based on current section
+  const currentProgress = lessonContent.length > 0 ? ((currentSection + 1) / lessonContent.length) * 100 : 0
+
+
+
+  // Render speed-specific layouts
   return (
     <DynamicBackground theme={currentTopic.backgroundTheme}>
-      <div className="min-h-screen p-4">
-      {/* Header */}
-      <motion.header
-        className="flex items-center justify-between mb-6"
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-      >
-        <motion.button
-          className="bg-white/20 backdrop-blur rounded-full p-3 tilt-3d glass-3d"
-          onClick={() => onNavigate('home')}
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-        >
-          <span className="text-white text-xl">←</span>
-        </motion.button>
-        
-        <div className="flex-1 mx-4">
-          <ProgressBar
-            current={currentSection + 1}
-            total={lessonContent.length}
-            color="secondary"
-            showPercentage={false}
-          />
+      <div className="lesson-screen-wrapper max-h-screen flex flex-col">
+        {/* Header with progress and navigation */}
+        <div className="flex-shrink-0 p-4 bg-white/10 backdrop-blur-lg">
+          <div className="max-w-6xl mx-auto flex items-center gap-4">
+            <button 
+              onClick={() => onNavigate('activity')}
+              type="button"
+              className="p-2 text-xl rounded-xl bg-white/20 text-white hover:bg-white/30 transition-all duration-300 backdrop-blur-lg shadow-lg min-w-[40px] h-10 flex items-center justify-center"
+                          >
+                {(MdArrowBack as any)({ style: { display: 'inline' } })}
+              </button>
+            <div className="flex-1">
+              <ProgressBar current={currentSection + 1} total={lessonContent.length} />
+              <div className="text-center text-white text-sm mt-1 font-bold drop-shadow-lg">
+                📚 Section {currentSection + 1} of {lessonContent.length} 
+              </div>
         </div>
-        
-        <div className="bg-white/20 backdrop-blur rounded-2xl px-3 py-2 glass-3d tilt-3d">
-          <span className="text-white font-bold text-sm">
-            {currentSection + 1}/{lessonContent.length}
-          </span>
+            <UserMenu />
+          </div>
         </div>
-      </motion.header>
 
-      {/* Main Content */}
-      <div className="max-w-lg mx-auto">
+        {/* Main Content Area */}
+        <div className="flex-1  max-h-screen">
         <AnimatePresence mode="wait">
           <motion.div
             key={currentSection}
-            className="bg-white/95 backdrop-blur rounded-3xl p-6 mb-6 shadow-xl card-3d glass-3d"
             initial={{ opacity: 0, x: 100 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: -100 }}
             transition={{ duration: 0.3 }}
-          >
-            {/* Topic Title */}
-            <motion.h1
-              className="font-comic text-2xl font-bold text-gray-800 mb-4 text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              className="h-full p-3 sm:p-4"
             >
-              {currentContent.title}
-            </motion.h1>
-
-            {/* Interactive Image/Animation */}
-            <motion.div
-              className="text-6xl text-center mb-6 cursor-pointer"
-              onClick={handleInteraction}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.95 }}
-              animate={
-                currentContent.interactive === 'animation' 
-                  ? { rotate: [0, 5, -5, 0], y: [0, -10, 0] }
-                  : {}
-              }
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              {currentContent.image}
-            </motion.div>
-
-            {/* Interactive Zone */}
-            <motion.div
-              className={`p-4 rounded-2xl mb-4 cursor-pointer transition-all duration-300 tilt-3d ${
-                isRevealed ? 'bg-success-100 border-2 border-success-300' : 'bg-gray-100 border-2 border-dashed border-gray-300'
-              }`}
-              onClick={handleInteraction}
-              whileHover={{ scale: 1.02 }}
-            >
-              {isRevealed ? (
-                <motion.p
-                  className="text-gray-700 leading-relaxed"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ duration: 0.5 }}
-                >
-                  {currentContent.content}
-                </motion.p>
-              ) : (
-                <p className="text-gray-500 text-center">
-                  🔍 Tap to reveal the science!
-                </p>
+              {userSpeed === 1 && (
+                <Speed1Layout 
+                  currentContent={currentContent}
+                  onNext={handleNext}
+                  onPrevious={handlePrevious}
+                  currentSection={currentSection}
+                  totalSections={lessonContent.length}
+                />
               )}
-            </motion.div>
+              
+              {userSpeed === 2 && (
+                <Speed2Layout 
+                  currentContent={currentContent}
+                  onNext={handleNext}
+                  onPrevious={handlePrevious}
+                  currentSection={currentSection}
+                  totalSections={lessonContent.length}
+                />
+              )}
+              
+              {userSpeed === 3 && (
+                <Speed3Layout 
+                  currentContent={currentContent}
+                  onNext={handleNext}
+                  onPrevious={handlePrevious}
+                  currentSection={currentSection}
+                  totalSections={lessonContent.length}
+                />
+              )}
+              
+              {userSpeed === 4 && (
+                <Speed4Layout 
+                  currentContent={currentContent}
+                  onNext={handleNext}
+                  onPrevious={handlePrevious}
+                  currentSection={currentSection}
+                  totalSections={lessonContent.length}
+                />
+              )}
+              
+              {userSpeed === 5 && (
+                <Speed5Layout 
+                  currentContent={currentContent}
+                  onNext={handleNext}
+                  onPrevious={handlePrevious}
+                  currentSection={currentSection}
+                  totalSections={lessonContent.length}
+                />
+              )}
           </motion.div>
         </AnimatePresence>
-
-        {/* Nova's Tip */}
-        <motion.div
-          className="flex items-start gap-4 mb-6"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-        >
-          <SimbaMascot size="sm" animate={true} />
-          <div className="chat-bubble flex-1">
-            <p className="text-gray-700 text-sm">{currentContent.tip}</p>
-          </div>
-        </motion.div>
-
-        {/* Next Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.7 }}
-        >
-          <PrimaryButton
-            onClick={handleNext}
-            disabled={!isRevealed && currentContent.interactive !== 'celebration'}
-            className="w-full"
-            variant={currentSection === lessonContent.length - 1 ? 'success' : 'primary'}
-            icon={currentSection === lessonContent.length - 1 ? '🎉' : '→'}
-          >
-            {currentSection === lessonContent.length - 1 ? 'Complete Lesson!' : 'Next'}
-          </PrimaryButton>
-        </motion.div>
       </div>
     </div>
     </DynamicBackground>
