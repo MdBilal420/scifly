@@ -39,7 +39,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
     return () => {
       dispatch(resetQuiz())
     }
-  }, [dispatch, currentTopic?.id, isGeneratingQuiz, quizError, onNavigate])
+  }, [dispatch, currentTopic?.id, isGeneratingQuiz, quizError, onNavigate, quizQuestions.length])
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {
@@ -98,7 +98,6 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   }
 
   const currentQuestion = quizQuestions[currentQuestionIndex]
-  const progress = ((currentQuestionIndex + 1) / quizQuestions.length) * 100
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (hasAnswered) return

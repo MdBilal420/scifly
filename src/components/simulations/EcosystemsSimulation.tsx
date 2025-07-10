@@ -29,7 +29,6 @@ const EcosystemsSimulation: React.FC<EcosystemsSimulationProps> = ({
   const [organisms, setOrganisms] = useState<Organism[]>([])
   const [activeStep, setActiveStep] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
   const [environment, setEnvironment] = useState<'forest' | 'ocean' | 'desert'>('forest')
   const [weather, setWeather] = useState<'sunny' | 'rainy' | 'cloudy'>('sunny')
   const organismIdRef = useRef(0)
@@ -140,7 +139,6 @@ const EcosystemsSimulation: React.FC<EcosystemsSimulationProps> = ({
   const startFullEcosystem = () => {
     if (isAnimating) return
     
-    setCurrentStep(0)
     setActiveStep('foodchain')
     setIsAnimating(true)
 
@@ -149,26 +147,25 @@ const EcosystemsSimulation: React.FC<EcosystemsSimulationProps> = ({
     
     // Step 2: Predator-Prey
     setTimeout(() => {
-      setCurrentStep(1)
+      setActiveStep('predatorprey')
       showPredatorPrey()
     }, 4500)
     
     // Step 3: Energy Flow
     setTimeout(() => {
-      setCurrentStep(2)
+      setActiveStep('energyflow')
       showEnergyFlow()
     }, 7500)
     
     // Step 4: Decomposition
     setTimeout(() => {
-      setCurrentStep(3)
+      setActiveStep('decomposition')
       showDecomposition()
     }, 10500)
   }
 
   const resetSimulation = () => {
     setOrganisms([])
-    setCurrentStep(0)
     setActiveStep('')
     setIsAnimating(false)
     organismIdRef.current = 0

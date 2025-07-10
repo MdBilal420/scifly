@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react'
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 interface HumanBodySimulationProps {
@@ -29,10 +29,8 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
   const [bodyParts, setBodyParts] = useState<BodyPart[]>([])
   const [selectedSystem, setSelectedSystem] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
   const [heartRate, setHeartRate] = useState(72)
   const [breathingRate, setBreathingRate] = useState(16)
-  const animationRef = useRef(0)
 
   const bodyPartsData: BodyPart[] = [
     // Circulatory System
@@ -105,12 +103,11 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
 
   React.useEffect(() => {
     setBodyParts(bodyPartsData)
-  }, [])
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const startCirculatorySystem = () => {
     setSelectedSystem('circulatory')
     setIsAnimating(true)
-    setCurrentStep(0)
 
     // Animate heart and blood flow
     setBodyParts(prev => prev.map(part => ({
@@ -127,7 +124,6 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
   const startRespiratorySystem = () => {
     setSelectedSystem('respiratory')
     setIsAnimating(true)
-    setCurrentStep(1)
 
     // Animate lungs and breathing
     setBodyParts(prev => prev.map(part => ({
@@ -144,7 +140,6 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
   const startDigestiveSystem = () => {
     setSelectedSystem('digestive')
     setIsAnimating(true)
-    setCurrentStep(2)
 
     // Animate digestive process
     setBodyParts(prev => prev.map(part => ({
@@ -161,7 +156,6 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
   const startSkeletalSystem = () => {
     setSelectedSystem('skeletal')
     setIsAnimating(true)
-    setCurrentStep(3)
 
     // Animate skeletal system
     setBodyParts(prev => prev.map(part => ({
@@ -179,7 +173,6 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
   const startFullBodyTour = () => {
     if (isAnimating) return
     
-    setCurrentStep(0)
     setSelectedSystem('circulatory')
     setIsAnimating(true)
 
@@ -188,26 +181,25 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
     
     // Step 2: Respiratory
     setTimeout(() => {
-      setCurrentStep(1)
+      setSelectedSystem('respiratory')
       startRespiratorySystem()
     }, 3500)
     
     // Step 3: Digestive
     setTimeout(() => {
-      setCurrentStep(2)
+      setSelectedSystem('digestive')
       startDigestiveSystem()
     }, 6500)
     
     // Step 4: Skeletal
     setTimeout(() => {
-      setCurrentStep(3)
+      setSelectedSystem('skeletal')
       startSkeletalSystem()
     }, 9500)
   }
 
   const resetSimulation = () => {
     setBodyParts(bodyPartsData.map(part => ({ ...part, isActive: false })))
-    setCurrentStep(0)
     setSelectedSystem('')
     setIsAnimating(false)
   }
@@ -216,7 +208,6 @@ const HumanBodySimulation: React.FC<HumanBodySimulationProps> = ({
     const part = bodyParts.find(p => p.id === partId)
     if (part) {
       setSelectedSystem(part.system)
-      setCurrentStep(bodyPartsData.findIndex(p => p.id === partId))
       if (onStepComplete) onStepComplete(bodyPartsData.findIndex(p => p.id === partId))
     }
   }

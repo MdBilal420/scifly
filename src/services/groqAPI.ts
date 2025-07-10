@@ -112,7 +112,6 @@ class GroqAPIService {
     // Determine content style based on user's learning speed
     let contentStyle = 'balanced with 2-3 sentences'
     let tipStyle = 'encouraging'
-    let exampleCount = 2
     
     if (userProfile) {
       const { preferences } = userProfile
@@ -121,17 +120,14 @@ class GroqAPIService {
         case 'comprehensive':
           contentStyle = 'detailed with 4-5 sentences and multiple examples'
           tipStyle = 'detailed and thorough'
-          exampleCount = preferences.exampleCount
           break
         case 'detailed':
           contentStyle = 'well-explained with 3-4 sentences and good examples'
           tipStyle = 'helpful and informative'
-          exampleCount = preferences.exampleCount
           break
         case 'basic':
           contentStyle = 'concise with 1-2 sentences and clear points'
           tipStyle = 'quick and encouraging'
-          exampleCount = preferences.exampleCount
           break
       }
     }
@@ -300,9 +296,6 @@ Rules:
   }
 
   private getFallbackLessonContent(topic: Topic, userProfile?: UserProfile): LessonContent[] {
-    const userName = userProfile?.name || 'young scientist'
-    const contentLength = userProfile?.preferences.explanationDetail === 'comprehensive' ? 'detailed explanation' : 
-                         userProfile?.preferences.explanationDetail === 'basic' ? 'simple overview' : 'good explanation'
     
     return [
       {
@@ -341,7 +334,6 @@ Rules:
   }
 
   private getFallbackQuizQuestions(topic: Topic): QuizQuestion[] {
-    const topicTitle = topic.title.toLowerCase()
     const keyPoints = topic.keyLearningPoints
     
     // Generate topic-specific fallback questions

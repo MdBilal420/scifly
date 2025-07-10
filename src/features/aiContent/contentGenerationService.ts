@@ -29,7 +29,7 @@ export interface AdaptedContent {
 export const generateAdaptiveContent = async (
   request: ContentGenerationRequest
 ): Promise<AdaptedContent> => {
-  const { originalContent, userSpeed, personalizationLevel, userProfile } = request
+  const { originalContent, userSpeed, userProfile } = request
   
   // Get speed-based learning modes
   const speedConfig = getModesForSpeed(userSpeed)

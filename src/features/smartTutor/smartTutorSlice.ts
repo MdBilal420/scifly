@@ -230,7 +230,7 @@ export const generatePersonalizedFeedback = createAsyncThunk(
     feedbackStyle: string
   }, { getState, rejectWithValue }) => {
     try {
-      const state = getState() as { smartTutor: SmartTutorState }
+        //   const state = getState() as { smartTutor: SmartTutorState }
       
       const feedback = await generateFeedback({
         userId: request.userId,
@@ -303,12 +303,6 @@ function calculateHintDifficulty(userSpeed: number): number {
     5: 1.0  // Advanced hints
   }
   return difficultyMap[userSpeed as keyof typeof difficultyMap] || 0.6
-}
-
-function calculateQuestionDifficulty(userSpeed: number, currentProgress: number): number {
-  const baseDifficulty = calculateHintDifficulty(userSpeed)
-  const progressBonus = currentProgress * 0.2 // Increase difficulty as user progresses
-  return Math.min(1.0, baseDifficulty + progressBonus)
 }
 
 const smartTutorSlice = createSlice({

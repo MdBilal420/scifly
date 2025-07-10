@@ -23,20 +23,11 @@ const PhotosynthesisSimulation: React.FC<PhotosynthesisSimulationProps> = ({
   onStepComplete,
   onComplete
 }) => {
-  const [currentStep, setCurrentStep] = useState(0)
   const [isAnimating, setIsAnimating] = useState(false)
   const [particles, setParticles] = useState<Particle[]>([])
   const [activeInfo, setActiveInfo] = useState<string>('')
   const simulationRef = useRef<HTMLDivElement>(null)
   const particleIdRef = useRef(0)
-
-  const steps = [
-    { name: 'Sunlight', description: 'Energy from the sun' },
-    { name: 'CO₂ Absorption', description: 'Carbon dioxide from air' },
-    { name: 'Water Uptake', description: 'Water from soil' },
-    { name: 'Photosynthesis', description: 'Making food in leaves' },
-    { name: 'Outputs', description: 'Glucose and oxygen' }
-  ]
 
   const createParticle = (type: Particle['type'], startX: number, startY: number, endX: number, endY: number) => {
     const newParticle: Particle = {
@@ -150,7 +141,6 @@ const PhotosynthesisSimulation: React.FC<PhotosynthesisSimulationProps> = ({
   const startFullProcess = () => {
     if (isAnimating) return
     
-    setCurrentStep(0)
     setActiveInfo('sunlight')
     setIsAnimating(true)
 
@@ -159,32 +149,31 @@ const PhotosynthesisSimulation: React.FC<PhotosynthesisSimulationProps> = ({
     
     // Step 2: CO2 absorption
     setTimeout(() => {
-      setCurrentStep(1)
+      setActiveInfo('co2')
       showCO2Absorption()
     }, 3500)
     
     // Step 3: Water uptake
     setTimeout(() => {
-      setCurrentStep(2)
+      setActiveInfo('water')
       showWaterUptake()
     }, 6000)
     
     // Step 4: Photosynthesis
     setTimeout(() => {
-      setCurrentStep(3)
+      setActiveInfo('photosynthesis')
       showPhotosynthesis()
     }, 9000)
     
     // Step 5: Outputs
     setTimeout(() => {
-      setCurrentStep(4)
+      setActiveInfo('outputs')
       showOutputs()
     }, 11000)
   }
 
   const resetSimulation = () => {
     setParticles([])
-    setCurrentStep(0)
     setActiveInfo('')
     setIsAnimating(false)
     particleIdRef.current = 0

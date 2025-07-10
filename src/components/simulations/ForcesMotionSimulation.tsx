@@ -27,7 +27,6 @@ const ForcesMotionSimulation: React.FC<ForcesMotionSimulationProps> = ({
   const [objects, setObjects] = useState<Object[]>([])
   const [activeExperiment, setActiveExperiment] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
   const [gravity, setGravity] = useState(9.8)
   const [friction, setFriction] = useState(0.1)
   const [inclinedAngle, setInclinedAngle] = useState(15)
@@ -150,7 +149,6 @@ const ForcesMotionSimulation: React.FC<ForcesMotionSimulationProps> = ({
   const startFullExperiment = () => {
     if (isAnimating) return
     
-    setCurrentStep(0)
     setActiveExperiment('gravity')
     setIsAnimating(true)
 
@@ -159,26 +157,25 @@ const ForcesMotionSimulation: React.FC<ForcesMotionSimulationProps> = ({
     
     // Step 2: Friction
     setTimeout(() => {
-      setCurrentStep(1)
+      setActiveExperiment('friction')
       startFrictionExperiment()
     }, 4500)
     
     // Step 3: Inclined Plane
     setTimeout(() => {
-      setCurrentStep(2)
+      setActiveExperiment('inclined')
       startInclinedPlaneExperiment()
     }, 8500)
     
     // Step 4: Pendulum
     setTimeout(() => {
-      setCurrentStep(3)
+      setActiveExperiment('pendulum')
       startPendulumExperiment()
     }, 12500)
   }
 
   const resetSimulation = () => {
     setObjects([])
-    setCurrentStep(0)
     setActiveExperiment('')
     setIsAnimating(false)
     objectIdRef.current = 0

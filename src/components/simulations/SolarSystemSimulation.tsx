@@ -29,7 +29,6 @@ const SolarSystemSimulation: React.FC<SolarSystemSimulationProps> = ({
   const [planets, setPlanets] = useState<Planet[]>([])
   const [selectedPlanet, setSelectedPlanet] = useState<string>('')
   const [isAnimating, setIsAnimating] = useState(false)
-  const [currentStep, setCurrentStep] = useState(0)
   const animationRef = useRef<number>()
 
   const planetData: Omit<Planet, 'x' | 'y' | 'angle'>[] = [
@@ -157,7 +156,6 @@ const SolarSystemSimulation: React.FC<SolarSystemSimulationProps> = ({
 
   const startSimulation = () => {
     setIsAnimating(true)
-    setCurrentStep(0)
     if (onStepComplete) onStepComplete(0)
   }
 
@@ -168,7 +166,6 @@ const SolarSystemSimulation: React.FC<SolarSystemSimulationProps> = ({
   const resetSimulation = () => {
     setIsAnimating(false)
     setSelectedPlanet('')
-    setCurrentStep(0)
     const resetPlanets = planetData.map((planet, index) => ({
       ...planet,
       angle: (index * 45) * (Math.PI / 180),
@@ -182,18 +179,12 @@ const SolarSystemSimulation: React.FC<SolarSystemSimulationProps> = ({
     setSelectedPlanet(planetId)
     const planetIndex = planetData.findIndex(p => p.id === planetId)
     if (planetIndex !== -1) {
-      setCurrentStep(planetIndex + 1)
       if (onStepComplete) onStepComplete(planetIndex + 1)
     }
   }
 
   const showOrbits = () => {
     // This could show orbital paths
-    if (onStepComplete) onStepComplete(0)
-  }
-
-  const showScale = () => {
-    // This could show relative sizes
     if (onStepComplete) onStepComplete(0)
   }
 
@@ -224,7 +215,6 @@ const SolarSystemSimulation: React.FC<SolarSystemSimulationProps> = ({
           whileTap={{ scale: 0.95 }}
           onClick={() => {
             setSelectedPlanet('sun')
-            setCurrentStep(0)
             if (onStepComplete) onStepComplete(0)
           }}
           animate={{
