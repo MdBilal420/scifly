@@ -64,9 +64,9 @@ export const loadQuizQuestions = createAsyncThunk(
       // Convert database questions to QuizQuestion format
       const quizQuestions: QuizQuestion[] = questions.map((q: any) => ({
         id: q.id,
-        question: q.question_text,
+        question: q.question,
         options: q.options,
-        correctAnswer: q.correct_answer,
+        correctAnswer: q.correct_answer_index,
         explanation: q.explanation
       }))
       

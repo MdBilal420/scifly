@@ -28,10 +28,10 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const { currentUser } = useAppSelector((state) => state.user)
 
   useEffect(() => {
-    if (currentTopic && lessonContent.length === 0 && !isGeneratingContent && !contentError) {
+    if (currentTopic) {
       dispatch(generateLessonContent(currentTopic))
     }
-  }, [currentTopic?.id, isGeneratingContent, contentError, dispatch]) // More specific dependencies
+  }, [currentTopic?.id, dispatch])
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {

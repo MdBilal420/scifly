@@ -10,13 +10,19 @@ import type {
 } from '../config/supabase'
 import { generateContentForSpeed, generateUIConfig } from '../utils/generativeUI'
 
-// Helper function to resolve topic slug to UUID
+const topicIdCache = new Map<string, string>()
+
 async function resolveTopicId(topicIdOrSlug: string): Promise<string> {
   // Check if the provided ID looks like a UUID
   const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(topicIdOrSlug)
   
   if (isUUID) {
     return topicIdOrSlug
+  }
+
+  // Check cache first
+  if (topicIdCache.has(topicIdOrSlug)) {
+    return topicIdCache.get(topicIdOrSlug)!
   }
   
   // It's likely a slug, so resolve it to UUID
@@ -30,6 +36,8 @@ async function resolveTopicId(topicIdOrSlug: string): Promise<string> {
     throw new Error(`Topic not found for slug: ${topicIdOrSlug}`)
   }
   
+  // Cache the result
+  topicIdCache.set(topicIdOrSlug, topicData.id)
   return topicData.id
 }
 
@@ -282,7 +290,9 @@ export const topicsAPI = {
       .eq('learning_speed_target', learningSpeed)
       .order('section_number', { ascending: true })
     
-    if (error) throw error
+    if (error) {
+      throw error
+    }
     return data || []
   },
 
@@ -295,43 +305,25 @@ export const topicsAPI = {
     tip: string
     interactive_type: string
     image: string
+    images?: string[] // Array of image URLs
     learning_speed_target: string
   }) {
     const topicId = await resolveTopicId(lessonData.topic_id)
     
-    // Use UPSERT to handle duplicate lessons gracefully
     const { data, error } = await supabase
       .from('lessons')
       .upsert({
         ...lessonData,
-        topic_id: topicId
+        topic_id: topicId,
+        images: lessonData.images || []
       }, {
         onConflict: 'topic_id,section_number,learning_speed_target',
-        ignoreDuplicates: false // Update existing records
+        ignoreDuplicates: false
       })
       .select()
       .single()
     
     if (error) {
-      // Handle duplicate key errors gracefully (lesson already exists)
-      if (error.code === '23505') {
-        console.log(`ℹ️ Lesson already exists: topic=${topicId}, section=${lessonData.section_number}, speed=${lessonData.learning_speed_target}`)
-        // Return a mock response indicating the lesson exists (the actual lesson will be loaded by getLessons)
-        return { 
-          id: 'existing-lesson',
-          topic_id: topicId,
-          section_number: lessonData.section_number,
-          title: lessonData.title,
-          content: lessonData.content,
-          tip: lessonData.tip,
-          interactive_type: lessonData.interactive_type,
-          image: lessonData.image,
-          learning_speed_target: lessonData.learning_speed_target,
-          created_at: new Date().toISOString()
-        }
-      }
-      
-      console.error('Failed to save lesson:', error.message)
       throw error
     }
     return data
@@ -627,6 +619,28 @@ export const quizAPI = {
     
     if (error && error.code !== 'PGRST116') throw error
     return data
+  },
+
+  // Save quiz questions
+  async saveQuizQuestions(topicIdOrSlug: string, learningSpeed: string, questions: any[]) {
+    const topicId = await resolveTopicId(topicIdOrSlug)
+    
+    const questionsToSave = questions.map((q, index) => ({
+      topic_id: topicId,
+      question: q.question,
+      options: q.options,
+      correct_answer_index: q.correctAnswer,
+      explanation: q.explanation,
+      learning_speed_target: learningSpeed
+    }))
+    
+    const { data, error } = await supabase
+      .from('quiz_questions')
+      .insert(questionsToSave)
+      .select()
+    
+    if (error) throw error
+    return data
   }
 }
 
@@ -826,20 +840,24 @@ export const goalsAPI = {
   async getTodaysGoal(userId: string) {
     const today = new Date().toISOString().split('T')[0]
     
+    // Use maybeSingle to avoid error when 0 rows are returned
     const { data, error } = await supabase
       .from('daily_goals')
       .select('*')
       .eq('user_id', userId)
       .eq('goal_date', today)
-      .single()
+      .maybeSingle()
     
     if (error) {
-      if (error.code === 'PGRST116') {
-        // No daily goal exists for today, create a default one
-        return this.setDailyGoal(userId, 4) // Default goal of 4 lessons
-      }
+      // Only throw if it's not the "no rows" case - maybeSingle already avoids PGRST116
       throw error
     }
+
+    if (!data) {
+      // No daily goal exists yet - create a default one
+      return this.setDailyGoal(userId, 4) // Default goal of 4 lessons
+    }
+
     return data
   },
 

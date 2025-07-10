@@ -140,6 +140,17 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({ onNavigate }) => {
 
   // Show completion stats
   if (showingResults && completionStats) {
+    // Format time display
+    const formatTime = (seconds: number) => {
+      if (seconds < 60) {
+        return `${seconds}s`
+      } else {
+        const minutes = Math.floor(seconds / 60)
+        const remainingSeconds = seconds % 60
+        return remainingSeconds > 0 ? `${minutes}m ${remainingSeconds}s` : `${minutes}m`
+      }
+    }
+    
     return (
       <DynamicBackground theme={currentTopic.backgroundTheme}>
         <div className="min-h-screen p-4">
@@ -172,7 +183,7 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({ onNavigate }) => {
                 
                 <div className="bg-gradient-to-r from-purple-100 to-purple-200 rounded-2xl p-4">
                   <div className="text-2xl font-bold text-purple-600">
-                    {Math.floor(completionStats.timeSpent / 60)}m
+                    {formatTime(completionStats.timeSpent)}
                   </div>
                   <p className="text-purple-700 text-sm">Time Spent</p>
                 </div>
@@ -438,9 +449,15 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({ onNavigate }) => {
             } bg-white/20 backdrop-blur text-white hover:bg-white/30`}
             onClick={async () => {
               if (currentCardIndex === flashcards.length - 1) {
-                await handleComplete();
+                // First dispatch nextCard to set showingResults = true
+                dispatch(nextCard());
+                // Then handle completion after a small delay to ensure state is updated
+                setTimeout(async () => {
+                  await handleComplete();
+                }, 100);
+              } else {
+                dispatch(nextCard());
               }
-              dispatch(nextCard());
             }}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

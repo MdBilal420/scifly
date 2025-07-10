@@ -10,7 +10,7 @@ export interface LessonContent {
   title: string
   content: string
   tip: string
-  interactive: string
+  interactive: "tap-to-reveal" | "drag-to-learn" | "animation" | "celebration"
   image: string
 }
 
@@ -35,7 +35,6 @@ class GroqAPIService {
   private async makeRequest(messages: any[], maxRetries: number = 3): Promise<string> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`🤖 Groq API attempt ${attempt}/${maxRetries}`)
         
         // Create AbortController for timeout handling
         const controller = new AbortController()
@@ -81,11 +80,11 @@ class GroqAPIService {
           throw new Error('Invalid response format from Groq API')
         }
         
-        console.log('✅ Groq API request successful')
-        return data.choices[0].message.content
+        const content = data.choices[0].message.content
+        
+        return content
         
       } catch (error: any) {
-        console.warn(`❌ Groq API attempt ${attempt} failed:`, error.message)
         
         // Don't retry for client errors (400-499, except 429)
         if (error.message.includes('Groq API error:') && 
@@ -97,13 +96,11 @@ class GroqAPIService {
         
         // If this was the last attempt, throw the error
         if (attempt === maxRetries) {
-          console.error('🚨 All Groq API attempts failed')
           throw error
         }
         
         // Exponential backoff: wait longer between retries
         const delay = Math.min(1000 * Math.pow(2, attempt - 1), 10000) // 1s, 2s, 4s max
-        console.log(`⏳ Retrying in ${delay/1000}s...`)
         await new Promise(resolve => setTimeout(resolve, delay))
       }
     }
@@ -149,7 +146,7 @@ Return JSON array with:
 - content: ${contentStyle}
 - tip: ${tipStyle} tip from Simba
 - interactive: "tap-to-reveal"|"drag-to-learn"|"animation"|"celebration"
-- image: single emoji
+- image: "single emoji in quotes"
 
 Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `. Address ${userProfile.name} in tips.` : ''}`
 
@@ -157,7 +154,7 @@ Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `.
       const response = await this.makeRequest([
         {
           role: 'system',
-          content: 'You are an expert teacher skilled in developing detailed lesson plans that are meaningfully connected to learning outcomes for your students. Your task is to generate a list of 5 lesson objectives for my fifth grade science class. Each objective should begin with "Students will be able to" and align to the 5th grade Next Generation Science Standards. Always respond with valid JSON.'
+          content: 'You are an expert teacher skilled in developing detailed lesson plans that are meaningfully connected to learning outcomes for your students. Always respond with valid JSON.'
         },
         {
           role: 'user',
@@ -165,9 +162,43 @@ Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `.
         }
       ])
 
-      // Parse the JSON response
-      const cleanResponse = response.replace(/```json|```/g, '').trim()
-      return JSON.parse(cleanResponse)
+      // Parse the JSON response with robust handling
+      let cleanResponse = response.replace(/```json|```/g, '').trim()
+
+      let lessonContent: any[]
+      
+      try {
+        // Attempt 1: Direct parse
+        lessonContent = JSON.parse(cleanResponse)
+      } catch (e1) {
+        // Attempt 2: Extract JSON array from surrounding text
+        const jsonMatch = cleanResponse.match(/(\[[\s\S]*\])/)
+        
+        if (jsonMatch && jsonMatch[0]) {
+          const extractedJson = jsonMatch[0]
+          try {
+            lessonContent = JSON.parse(extractedJson)
+          } catch (e2) {
+            // Attempt 3: Repair common JSON issues and parse again
+            try {
+              // This regex will find "image": emoji (without quotes) and add quotes
+              const repairedJson = extractedJson.replace(/(['"])?image\1?\s*:\s*([^"'{}\[\]\s,]+)/g, '"image": "$2"');
+              lessonContent = JSON.parse(repairedJson)
+            } catch (e3) {
+              throw new Error('Failed to parse lesson content from LLM after multiple attempts.')
+            }
+          }
+        } else {
+          throw new Error('Failed to parse lesson content, no JSON array found in response.')
+        }
+      }
+      
+      if (!Array.isArray(lessonContent)) {
+        throw new Error('Lesson JSON is not an array')
+      }      
+      
+      // Generate images for each lesson
+      return lessonContent
     } catch (error) {
       console.error('Failed to generate lesson content:', error)
       // Return fallback content
@@ -175,31 +206,75 @@ Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `.
     }
   }
 
+
+
+
+
   async generateQuizQuestions(topic: Topic, count: number = 5): Promise<QuizQuestion[]> {
-    const prompt = `Create ${count} Grade 5 quiz questions about "${topic.title}".
+    const prompt = `Create exactly ${count} Grade 5 quiz questions about "${topic.title}".
 
-JSON format:
-- question: clear question
-- options: 4 answer choices  
-- correctAnswer: index 0-3
-- explanation: simple why explanation
+IMPORTANT: You must respond with ONLY a valid JSON array. No explanations, no markdown, no other text.
 
-Age 10-11, engaging language. Focus: ${topic.keyLearningPoints.slice(0, 2).join(', ')}`
+Required JSON format:
+[
+  {
+    "question": "What is the main function of...?",
+    "options": ["Option A", "Option B", "Option C", "Option D"],
+    "correctAnswer": 0,
+    "explanation": "This is correct because..."
+  }
+]
+
+Rules:
+- correctAnswer must be 0, 1, 2, or 3 (index of correct option)
+- Each question must have exactly 4 options
+- Focus on: ${topic.keyLearningPoints.slice(0, 2).join(', ')}
+- Use age-appropriate language for 10-11 year olds`
 
     try {
       const response = await this.makeRequest([
         {
           role: 'system',
-          content: 'You are an expert elementary science educator creating Grade 5 quiz questions. Always respond with valid JSON.'
+          content: 'You are a JSON-only quiz generator. You must respond with ONLY valid JSON array. No markdown, no explanations, no other text. If you cannot generate valid JSON, respond with an empty array [].'
         },
         {
           role: 'user',
           content: prompt
         }
-      ])
+      ], 2) // Reduce retries for quiz generation
 
-      const cleanResponse = response.replace(/```json|```/g, '').trim()
-      return JSON.parse(cleanResponse)
+      // Parse the JSON response with better error handling
+      let cleanResponse = response.replace(/```json|```/g, '').trim()
+      
+      // Try to fix common JSON issues
+      try {
+        // First attempt: direct parse
+        const questions = JSON.parse(cleanResponse) as QuizQuestion[]
+        return this.validateAndProcessQuizQuestions(questions, count, topic)
+      } catch (parseError: any) {
+        // Second attempt: try to extract JSON array from the response
+        const jsonMatch = cleanResponse.match(/\[[\s\S]*\]/)
+        if (jsonMatch) {
+          try {
+            const questions = JSON.parse(jsonMatch[0]) as QuizQuestion[]
+            return this.validateAndProcessQuizQuestions(questions, count, topic)
+          } catch (extractError: any) {
+            // Continue to next attempt
+          }
+        }
+        
+        // Third attempt: try to repair common JSON issues
+        try {
+          const repairedResponse = this.repairQuizJSON(cleanResponse)
+          const questions = JSON.parse(repairedResponse) as QuizQuestion[]
+          return this.validateAndProcessQuizQuestions(questions, count, topic)
+        } catch (repairError: any) {
+          // Continue to next attempt
+        }
+        
+        // If all parsing attempts fail, throw the original error
+        throw parseError
+      }
     } catch (error) {
       console.error('Failed to generate quiz questions:', error)
       return this.getFallbackQuizQuestions(topic)
@@ -266,30 +341,132 @@ Age 10-11, engaging language. Focus: ${topic.keyLearningPoints.slice(0, 2).join(
   }
 
   private getFallbackQuizQuestions(topic: Topic): QuizQuestion[] {
-    return [
+    const topicTitle = topic.title.toLowerCase()
+    const keyPoints = topic.keyLearningPoints
+    
+    // Generate topic-specific fallback questions
+    const fallbackQuestions: QuizQuestion[] = [
       {
         question: `What is the main focus of ${topic.title}?`,
         options: [
-          topic.keyLearningPoints[0] || "Learning about science",
-          "Playing games",
-          "Reading books",
-          "Watching TV"
+          keyPoints[0] || "Learning about science concepts",
+          "Playing games and having fun",
+          "Reading books and stories",
+          "Watching videos and movies"
         ],
         correctAnswer: 0,
-        explanation: `That's right! ${topic.title} focuses on ${topic.keyLearningPoints[0] || "understanding science concepts"}.`
+        explanation: `That's right! ${topic.title} focuses on ${keyPoints[0] || "understanding important science concepts"}.`
       },
       {
         question: "Why is it important to learn about science?",
         options: [
-          "It's boring",
+          "It's boring and difficult",
           "It helps us understand the world around us",
-          "It's too difficult",
-          "Only for adults"
+          "It's only for adults",
+          "It's not important at all"
         ],
         correctAnswer: 1,
         explanation: "Science helps us understand how everything works in our amazing world!"
+      },
+      {
+        question: `Which of these is most related to ${topic.title}?`,
+        options: [
+          "Playing video games",
+          keyPoints[1] || "Understanding natural processes",
+          "Watching cartoons",
+          "Eating food"
+        ],
+        correctAnswer: 1,
+        explanation: `${topic.title} is all about ${keyPoints[1] || "understanding how things work in nature"}!`
+      },
+      {
+        question: "What do scientists do?",
+        options: [
+          "Only work in laboratories",
+          "Ask questions and find answers about the world",
+          "Only study animals",
+          "Only work with computers"
+        ],
+        correctAnswer: 1,
+        explanation: "Scientists ask questions and use evidence to find answers about how our world works!"
+      },
+      {
+        question: `How can you learn more about ${topic.title}?`,
+        options: [
+          "Only by reading textbooks",
+          "By observing, asking questions, and doing experiments",
+          "Only by watching TV",
+          "Only by playing outside"
+        ],
+        correctAnswer: 1,
+        explanation: "The best way to learn about science is by observing, asking questions, and exploring!"
       }
     ]
+
+    return fallbackQuestions
+  }
+
+  private validateAndProcessQuizQuestions(questions: QuizQuestion[], count: number, topic: Topic): QuizQuestion[] {
+    // Ensure we have the right number of questions
+    if (!Array.isArray(questions)) {
+      return this.getFallbackQuizQuestions(topic)
+    }
+
+    // Validate and process each question
+    const validQuestions = questions
+      .filter((q, index) => {
+        if (!q.question || !q.options || !Array.isArray(q.options) || q.options.length !== 4) {
+          return false
+        }
+        if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) {
+          return false
+        }
+        return true
+      })
+      .map((q, index) => ({
+        ...q,
+        question: q.question.trim(),
+        options: q.options.map(opt => opt.trim()),
+        explanation: q.explanation?.trim() || `That's correct! ${q.options[q.correctAnswer]} is the right answer.`
+      }))
+      .slice(0, count)
+
+    // If we don't have enough valid questions, add fallback questions
+    if (validQuestions.length < count) {
+      const fallbackQuestions = this.getFallbackQuizQuestions(topic)
+      validQuestions.push(...fallbackQuestions.slice(0, count - validQuestions.length))
+    }
+
+    return validQuestions
+  }
+
+  private repairQuizJSON(response: string): string {
+    // Remove any text before the first [
+    const startIndex = response.indexOf('[')
+    if (startIndex === -1) {
+      throw new Error('No JSON array found in response')
+    }
+    
+    let jsonPart = response.substring(startIndex)
+    
+    // Find the matching closing bracket
+    let bracketCount = 0
+    let endIndex = -1
+    
+    for (let i = 0; i < jsonPart.length; i++) {
+      if (jsonPart[i] === '[') bracketCount++
+      if (jsonPart[i] === ']') bracketCount--
+      if (bracketCount === 0) {
+        endIndex = i + 1
+        break
+      }
+    }
+    
+    if (endIndex === -1) {
+      throw new Error('Unmatched brackets in JSON')
+    }
+    
+    return jsonPart.substring(0, endIndex)
   }
 
   async generateFlashcards(topic: Topic, userProfile: UserProfile): Promise<FlashcardData[]> {
