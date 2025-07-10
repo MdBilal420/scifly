@@ -29,7 +29,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
     if (currentTopic) {
       dispatch(generateLessonContent(currentTopic))
     }
-  }, [currentTopic?.id, dispatch])
+  }, [currentTopic, dispatch])
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {

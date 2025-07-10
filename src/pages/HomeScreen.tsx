@@ -22,7 +22,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   const [isTopicDialogOpen, setIsTopicDialogOpen] = useState(false)
 
   useEffect(() => {
-    if (currentUser ) {
+    if (currentUser?.id ) {
       dispatch(loadDailyGoal(currentUser.id))
       dispatch(loadUserProgress(currentUser.id))
     }
