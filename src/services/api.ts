@@ -1235,7 +1235,7 @@ export const adaptiveAPI = {
 }
 
 // Export all APIs
-export default {
+const api = {
   auth: authAPI,
   user: userAPI,
   topics: topicsAPI,
@@ -1246,4 +1246,5 @@ export default {
   analytics: analyticsAPI,
   goals: goalsAPI,
   adaptive: adaptiveAPI
-} 
+}
+export default api 
