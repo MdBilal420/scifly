@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSelector } from '../hooks/redux'
 import { getModesForSpeed } from '../config/learningModes'
@@ -16,9 +16,15 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
   const { currentTopic } = useAppSelector((state) => state.topics)
   const { currentUser } = useAppSelector((state) => state.user)
 
-  // Redirect if no topic selected
+  useEffect(() => {
+    // Redirect if no topic selected
+    if (!currentTopic) {
+      onNavigate('home')
+    }
+  }, [currentTopic, onNavigate])
+
+  // Return null (or a loader) while redirecting
   if (!currentTopic) {
-    onNavigate('home')
     return null
   }
 
@@ -47,13 +53,21 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             primary: false
           },
           {
-            id: 'simulation',
-            title: 'Interactive Simulation',
-            description: 'Explore with hands-on experiments',
-            icon: '🔬',
-            color: 'from-indigo-500 to-indigo-600',
+            id: 'flashcards',
+            title: 'Review Flashcards',
+            description: 'Quick review with visual cards',
+            icon: '🃏',
+            color: 'from-purple-500 to-purple-600',
             primary: false
-          }
+          },
+          // {
+          //   id: 'simulation',
+          //   title: 'Interactive Simulation',
+          //   description: 'Explore with hands-on experiments',
+          //   icon: '🔬',
+          //   color: 'from-indigo-500 to-indigo-600',
+          //   primary: false
+          // }
         ]
       case 2:
         return [
@@ -81,14 +95,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
-          {
-            id: 'simulation',
-            title: 'Interactive Simulation',
-            description: 'Hands-on learning experiments',
-            icon: '🔬',
-            color: 'from-indigo-500 to-indigo-600',
-            primary: false
-          }
+          // {
+          //   id: 'simulation',
+          //   title: 'Interactive Simulation',
+          //   description: 'Hands-on learning experiments',
+          //   icon: '🔬',
+          //   color: 'from-indigo-500 to-indigo-600',
+          //   primary: false
+          // }
         ]
       case 3:
         return [
@@ -109,21 +123,29 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             primary: false
           },
           {
-            id: 'practice',
-            title: 'Practice Mode',
-            description: 'Hands-on activities and experiments',
-            icon: '🔬',
-            color: 'from-orange-500 to-orange-600',
+            id: 'flashcards',
+            title: 'Review Flashcards',
+            description: 'Quick review with visual cards',
+            icon: '🃏',
+            color: 'from-purple-500 to-purple-600',
             primary: false
           },
-          {
-            id: 'simulation',
-            title: 'Interactive Simulation',
-            description: 'Advanced interactive models',
-            icon: '🌐',
-            color: 'from-indigo-500 to-indigo-600',
-            primary: false
-          }
+          // {
+          //   id: 'practice',
+          //   title: 'Practice Mode',
+          //   description: 'Hands-on activities and experiments',
+          //   icon: '🔬',
+          //   color: 'from-orange-500 to-orange-600',
+          //   primary: false
+          // },
+          // {
+          //   id: 'simulation',
+          //   title: 'Interactive Simulation',
+          //   description: 'Advanced interactive models',
+          //   icon: '🌐',
+          //   color: 'from-indigo-500 to-indigo-600',
+          //   primary: false
+          // }
         ]
       case 4:
         return [
@@ -144,29 +166,37 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             primary: false
           },
           {
-            id: 'chat',
-            title: 'AI Discussion',
-            description: 'Deep dive with AI tutor',
-            icon: '💭',
-            color: 'from-cyan-500 to-cyan-600',
+            id: 'flashcards',
+            title: 'Review Flashcards',
+            description: 'Quick review with visual cards',
+            icon: '🃏',
+            color: 'from-purple-500 to-purple-600',
             primary: false
           },
-          {
-            id: 'simulation',
-            title: 'Interactive Simulation',
-            description: 'Complex scientific modeling',
-            icon: '🌐',
-            color: 'from-indigo-500 to-indigo-600',
-            primary: false
-          },
-          {
-            id: 'challenge',
-            title: 'Challenge Mode',
-            description: 'Advanced problem solving',
-            icon: '🎯',
-            color: 'from-red-500 to-red-600',
-            primary: false
-          }
+          // {
+          //   id: 'chat',
+          //   title: 'AI Discussion',
+          //   description: 'Deep dive with AI tutor',
+          //   icon: '💭',
+          //   color: 'from-cyan-500 to-cyan-600',
+          //   primary: false
+          // },
+          // {
+          //   id: 'simulation',
+          //   title: 'Interactive Simulation',
+          //   description: 'Complex scientific modeling',
+          //   icon: '🌐',
+          //   color: 'from-indigo-500 to-indigo-600',
+          //   primary: false
+          // },
+          // {
+          //   id: 'challenge',
+          //   title: 'Challenge Mode',
+          //   description: 'Advanced problem solving',
+          //   icon: '🎯',
+          //   color: 'from-red-500 to-red-600',
+          //   primary: false
+          // }
         ]
       case 5:
         return [
@@ -187,21 +217,29 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             primary: false
           },
           {
-            id: 'simulation',
-            title: 'Interactive Simulation',
-            description: 'Advanced interactive models',
-            icon: '🌐',
-            color: 'from-indigo-500 to-indigo-600',
-            primary: false
-          },
-          {
-            id: 'research',
-            title: 'Research Mode',
-            description: 'Independent investigation',
-            icon: '🔍',
+            id: 'flashcards',
+            title: 'Review Flashcards',
+            description: 'Quick review with visual cards',
+            icon: '🃏',
             color: 'from-purple-500 to-purple-600',
             primary: false
-          }
+          },
+          // {
+          //   id: 'simulation',
+          //   title: 'Interactive Simulation',
+          //   description: 'Advanced interactive models',
+          //   icon: '🌐',
+          //   color: 'from-indigo-500 to-indigo-600',
+          //   primary: false
+          // },
+          // {
+          //   id: 'research',
+          //   title: 'Research Mode',
+          //   description: 'Independent investigation',
+          //   icon: '🔍',
+          //   color: 'from-purple-500 to-purple-600',
+          //   primary: false
+          // }
         ]
       default:
         return [
@@ -222,13 +260,21 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             primary: false
           },
           {
-            id: 'simulation',
-            title: 'Interactive Simulation',
-            description: 'Explore with hands-on experiments',
-            icon: '🔬',
-            color: 'from-indigo-500 to-indigo-600',
+            id: 'flashcards',
+            title: 'Review Flashcards',
+            description: 'Quick review with visual cards',
+            icon: '🃏',
+            color: 'from-purple-500 to-purple-600',
             primary: false
-          }
+          },
+          // {
+          //   id: 'simulation',
+          //   title: 'Interactive Simulation',
+          //   description: 'Explore with hands-on experiments',
+          //   icon: '🔬',
+          //   color: 'from-indigo-500 to-indigo-600',
+          //   primary: false
+          // }
         ]
     }
   }

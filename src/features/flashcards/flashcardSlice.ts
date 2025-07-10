@@ -57,10 +57,12 @@ export const startFlashcardSession = createAsyncThunk(
   'flashcards/startSession',
   async ({ topicId, totalCards }: { topicId: string; totalCards: number }) => {
     const sessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
+    const startTime = new Date().toISOString()
+    
     return {
       sessionId,
       topicId,
-      startTime: new Date().toISOString(),
+      startTime,
       totalCards,
       completedCards: 0,
       timeSpent: 0
@@ -76,7 +78,14 @@ export const endFlashcardSession = createAsyncThunk(
     
     if (!session) return null
 
-    const timeSpent = Math.floor((Date.now() - new Date(session.startTime).getTime()) / 1000)
+    const startTimeMs = new Date(session.startTime).getTime()
+    const currentTimeMs = Date.now()
+    let timeSpent = Math.floor((currentTimeMs - startTimeMs) / 1000)
+    
+    // Ensure minimum time spent is at least 1 second
+    if (timeSpent < 1) {
+      timeSpent = 1
+    }
 
     return {
       ...session,

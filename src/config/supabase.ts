@@ -135,4 +135,18 @@ export interface UserAchievement {
   unlocked_at?: string
   created_at: string
   achievements?: Achievement
+}
+
+export interface DatabaseLesson {
+  id: string
+  topic_id: string
+  section_number: number
+  title: string
+  content: string
+  tip: string
+  interactive_type: string
+  image: string
+  images: string[] // Array of image URLs from Supabase Storage
+  learning_speed_target: string
+  created_at: string
 } 

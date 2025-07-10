@@ -23,6 +23,7 @@ const AppContent: React.FC = () => {
 
   // Load user data and setup auth listener on app initialization
   useEffect(() => {
+    
     // Try to load current user on app start
     dispatch(loadCurrentUser())
     

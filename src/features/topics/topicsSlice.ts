@@ -170,10 +170,9 @@ export const generateQuizQuestions = createAsyncThunk(
       if (savedQuestions.length > 0) {
         // Convert database questions to QuizQuestion format
         const quizQuestions: QuizQuestion[] = savedQuestions.map((q: any) => ({
-          id: q.id,
-          question: q.question_text,
+          question: q.question,
           options: q.options,
-          correctAnswer: q.correct_answer,
+          correctAnswer: q.correct_answer_index,
           explanation: q.explanation
         }))
         return quizQuestions
@@ -182,11 +181,19 @@ export const generateQuizQuestions = createAsyncThunk(
       // Generate new questions if none exist
       const questions = await groqAPI.generateQuizQuestions(topic, 5)
       
-      // Note: You might want to save generated quiz questions to database here
-      // This would require extending the quizAPI to save quiz questions
+      // Save generated quiz questions to database for future use
+      if (questions.length > 0) {
+        try {
+          await quizAPI.saveQuizQuestions(topic.id, userProfile.learningSpeed.toString(), questions)
+        } catch (saveError: any) {
+          console.warn('⚠️ Failed to save quiz questions to database:', saveError.message)
+          // Continue anyway - questions will still work from memory
+        }
+      }
       
       return questions
     } catch (error: any) {
+      console.error('Failed to generate quiz questions:', error)
       return rejectWithValue(error.message || 'Failed to generate quiz questions')
     }
   }

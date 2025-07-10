@@ -63,6 +63,7 @@ CREATE TABLE lessons (
     tip TEXT NOT NULL,
     interactive_type TEXT NOT NULL,
     image TEXT NOT NULL,
+    images JSONB DEFAULT '[]', -- Array of image URLs from Supabase Storage
     learning_speed_target learning_speed NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     
