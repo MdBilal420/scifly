@@ -123,7 +123,8 @@ const SolarSystemSimulation: React.FC<SolarSystemSimulationProps> = ({
       y: 0
     }))
     setPlanets(initialPlanets)
-  }, [])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) 
 
   useEffect(() => {
     if (isAnimating) {

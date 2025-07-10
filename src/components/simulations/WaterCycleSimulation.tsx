@@ -389,7 +389,7 @@ const WaterCycleSimulation: React.FC<WaterCycleSimulationProps> = ({
         </motion.div>
 
         {/* Tooltip for Clouds */}
-        {showTooltip === 'cloud1' || showTooltip === 'cloud2' && (
+        {(showTooltip === 'cloud1' || showTooltip) === 'cloud2' && (
           <div className="absolute top-32 left-8 bg-white p-3 rounded-lg shadow-lg border-2 border-gray-300 z-20 max-w-48">
             <h4 className="font-bold text-gray-800 mb-1">☁️ Clouds</h4>
             <p className="text-sm text-gray-700">
