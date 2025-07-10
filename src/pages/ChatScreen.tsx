@@ -4,7 +4,6 @@ import { useAppSelector, useAppDispatch } from '../hooks/redux'
 import { addUserMessage, sendMessage } from '../features/chat/chatSlice'
 import { updateAchievementProgress } from '../features/achievements/achievementSlice'
 import SimbaMascot from '../components/SimbaMascot'
-import PrimaryButton from '../components/PrimaryButton'
 import SpaceDecorations from '../components/SpaceDecorations'
 import UserMenu from '../components/UserMenu'
 
