@@ -178,7 +178,7 @@ Cover: ${topic.keyLearningPoints.slice(0, 2).join(', ')}${userProfile?.name ? `.
             // Attempt 3: Repair common JSON issues and parse again
             try {
               // This regex will find "image": emoji (without quotes) and add quotes
-              const repairedJson = extractedJson.replace(/(['"])?image\1?\s*:\s*([^"'{}\[\]\s,]+)/g, '"image": "$2"');
+              const repairedJson = extractedJson.replace(/(['"])?image\1?\s*:\s*([^"'{}\[\]\s,]+)/g, '"image": "$2"'); // eslint-disable-line no-useless-escape
               lessonContent = JSON.parse(repairedJson)
             } catch (e3) {
               throw new Error('Failed to parse lesson content from LLM after multiple attempts.')

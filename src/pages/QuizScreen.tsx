@@ -39,7 +39,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
     return () => {
       dispatch(resetQuiz())
     }
-  }, [dispatch, currentTopic?.id, isGeneratingQuiz, quizError, onNavigate, quizQuestions.length])
+  }, [dispatch, currentTopic, isGeneratingQuiz, quizError, onNavigate, quizQuestions.length])
 
   // Show loading or redirect if no topic selected
   if (!currentTopic) {
