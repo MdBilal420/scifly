@@ -20,7 +20,7 @@ interface Object {
 }
 
 const ForcesMotionSimulation: React.FC<ForcesMotionSimulationProps> = ({
-  //userSpeed,
+  userSpeed,
   onStepComplete,
   onComplete
 }) => {
@@ -54,6 +54,11 @@ const ForcesMotionSimulation: React.FC<ForcesMotionSimulationProps> = ({
     setIsAnimating(true)
     setObjects([])
 
+    // Create objects at different heights
+    // const ball1 = createObject('ball', 100, 50, 1)
+    // const ball2 = createObject('ball', 200, 100, 2)
+    // const ball3 = createObject('ball', 300, 150, 0.5)
+
     // Start falling animation
     setTimeout(() => {
       setObjects(prev => prev.map(obj => ({
@@ -73,6 +78,11 @@ const ForcesMotionSimulation: React.FC<ForcesMotionSimulationProps> = ({
     setActiveExperiment('friction')
     setIsAnimating(true)
     setObjects([])
+
+    // Create objects on different surfaces
+    // const block1 = createObject('block', 50, 400, 1)
+    // const block2 = createObject('block', 200, 400, 1)
+    // const block3 = createObject('block', 350, 400, 1)
 
     // Apply different friction coefficients
     setTimeout(() => {
