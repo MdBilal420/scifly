@@ -453,7 +453,7 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({ onNavigate }) => {
                 dispatch(nextCard());
                 // Then handle completion after a small delay to ensure state is updated
                 setTimeout(async () => {
-                  await handleComplete();
+                await handleComplete();
                 }, 100);
               } else {
                 dispatch(nextCard());

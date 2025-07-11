@@ -135,7 +135,7 @@ export interface UserAchievement {
   unlocked_at?: string
   created_at: string
   achievements?: Achievement
-}
+} 
 
 export interface DatabaseLesson {
   id: string

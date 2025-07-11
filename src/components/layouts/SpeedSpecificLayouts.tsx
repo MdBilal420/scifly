@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MdArrowBack, MdArrowForward } from 'react-icons/md'
 
@@ -21,194 +21,125 @@ interface SpeedLayoutProps {
   totalSections: number
 }
 
-// Speed 1 (🐢): Simplified + Visual Layout
+// Speed 1 (🐢): Re-designed for Grade 5 UX
 export const Speed1Layout: React.FC<SpeedLayoutProps> = ({ 
   currentContent, 
   onNext, 
   onPrevious, 
   currentSection, 
   totalSections 
-}) => (
-  <div className="speed-1-layout h-full p-3 sm:p-4 flex flex-col overflow-hidden">
-    <div className="max-w-2xl mx-auto flex flex-col h-full justify-between min-h-0">
-      <div className="flex-1 flex items-center justify-center min-h-0 py-2">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={currentSection}
-            initial={{ opacity: 0, x: 100 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -100 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-h-full overflow-y-auto"
-          >
-            <div className="p-4 sm:p-6 bg-white/95 rounded-3xl shadow-2xl max-w-lg mx-auto text-center backdrop-blur-xl border border-white/30">
-              <div className="bg-gradient-to-br from-white/90 to-white/70 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-3 shadow-2xl border-4 border-white/50">
-                <span className="text-4xl sm:text-5xl leading-none drop-shadow-md">
-                  {currentContent?.image || '🔬'}
-                </span>
-              </div>
-              
-              <h3 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-slate-700 via-blue-500 to-purple-600 bg-clip-text text-transparent mb-3 font-comic">
-                {currentContent?.title || 'Learning Time'}
-              </h3>
-              
-              <p className="text-base sm:text-lg leading-relaxed text-slate-600 mb-4 font-medium">
-                {currentContent?.content || 'Loading content...'}
-              </p>
-              
-              <div className="bg-gradient-to-br from-green-100/50 to-lime-100/50 rounded-xl p-3 flex items-center gap-3 border-2 border-green-400/60 max-w-md mx-auto backdrop-blur-md shadow-lg">
-                <span className="text-xl flex-shrink-0">💡</span>
-                <span className="text-sm text-green-800 font-semibold text-left">
-                  {currentContent?.tip || 'You\'re doing great! Keep learning!'}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        </AnimatePresence>
+}) => {
+  return (
+    <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-transparent rounded-3xl">
+      {/* Left Column: Image only */}
+      <div className="flex items-center justify-center overflow-hidden min-h-0">
+        <motion.img 
+          src="https://czdtrrxwoonaryalnkbc.supabase.co/storage/v1/object/sign/scifly-lessons-diagram/photosynthesis.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zZTQzZjY0ZC1mOTQ2LTQwZTktOGQzMC1lZGY4NWZiZjNjOGQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzY2lmbHktbGVzc29ucy1kaWFncmFtL3Bob3Rvc3ludGhlc2lzLnBuZyIsImlhdCI6MTc1MjIxNTQ4MiwiZXhwIjoxNzgzNzUxNDgyfQ.iNB3njt5EWASJEWOlFqsQORKvd78TAipCwOO6RVpUEk" 
+          alt={currentContent?.title || 'Lesson Image'} 
+          className="max-w-full h-auto max-h-[66vh] object-contain rounded-2xl shadow-lg"
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.05 }}
+        />
       </div>
-      
-      <div className="text-center relative flex-shrink-0 flex items-center justify-center gap-3 mt-3 py-2">
-        <button 
-          onClick={onPrevious}
-          type="button"
-          className={`px-6 py-3 text-base font-bold text-white rounded-xl transition-all duration-300 backdrop-blur-lg relative overflow-hidden flex items-center justify-center drop-shadow-lg ${
-            currentSection === 0 
-              ? 'bg-gray-500/50 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-blue-400 to-purple-400 cursor-pointer hover:scale-105 hover:-translate-y-1 hover:shadow-xl shadow-lg'
-          }`}
-          disabled={currentSection === 0}
-        >
-          <BackIcon />
-          Previous
-        </button>
+
+      {/* Right Column: Text Content */}
+      <div className="bg-white text-gray-800 rounded-2xl p-8 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto">
+          <h3 className="text-3xl font-bold text-blue-900 mb-4">{currentContent?.title || 'Lesson Title'}</h3>
+          <p className="text-lg mb-6 leading-relaxed">
+            {currentContent?.content || 'Loading lesson content...'}
+          </p>
+
+          {currentContent?.tip && (
+            <div className="bg-yellow-300 text-yellow-900 rounded-xl p-4">
+              <h4 className="font-bold flex items-center gap-2 mb-2"><span className="text-xl">🌟</span> Fun Fact!</h4>
+              <p>{currentContent.tip}</p>
+            </div>
+          )}
+        </div>
         
-        <button 
-          onClick={onNext}
-          type="button"
-          className={`px-6 py-3 text-base font-bold text-white rounded-xl transition-all duration-300 backdrop-blur-lg relative overflow-hidden flex items-center justify-center drop-shadow-lg hover:scale-105 hover:-translate-y-1 hover:shadow-xl ${
-            currentSection === totalSections - 1 
-              ? 'bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 shadow-lg animate-pulse' 
-              : 'bg-gradient-to-r from-green-500 via-lime-400 to-yellow-300 shadow-lg'
-          }`}
-        >
-          {currentSection === totalSections - 1 ? '🎉 Complete! ' : 
-             <>Next <ForwardIcon /></>
-          }
-        </button>
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-8">
+            <button 
+              onClick={onPrevious} 
+              disabled={currentSection === 0}
+              className="bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button 
+              onClick={onNext}
+              className="bg-green-500 text-white font-bold py-2 px-8 rounded-full"
+            >
+              {currentSection === totalSections - 1 ? 'Finish' : 'Next'}
+            </button>
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
-// Speed 2 (🐨): Visual + Reading Layout
+// Speed 2 (🐨): Re-designed for Grade 5 UX
 export const Speed2Layout: React.FC<SpeedLayoutProps> = ({ 
   currentContent, 
   onNext, 
   onPrevious, 
   currentSection, 
   totalSections 
-}) => (
-  <div className="speed-2-layout h-full flex flex-col md:grid md:grid-cols-2 gap-3 p-3 sm:p-4 overflow-hidden">
-    {/* Visual Column */}
-    <div className="visual-column bg-white/90 rounded-2xl p-4 shadow-xl backdrop-blur-lg border border-white/30 flex flex-col min-h-0">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSection}
+}) => {
+  return (
+    <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-transparent rounded-3xl">
+      {/* Left Column: Image only */}
+      <div className="flex items-center justify-center overflow-hidden min-h-0">
+        <motion.img 
+          src="https://czdtrrxwoonaryalnkbc.supabase.co/storage/v1/object/sign/scifly-lessons-diagram/photosynthesis.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zZTQzZjY0ZC1mOTQ2LTQwZTktOGQzMC1lZGY4NWZiZjNjOGQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzY2lmbHktbGVzc29ucy1kaWFncmFtL3Bob3Rvc3ludGhlc2lzLnBuZyIsImlhdCI6MTc1MjIxNTQ4MiwiZXhwIjoxNzgzNzUxNDgyfQ.iNB3njt5EWASJEWOlFqsQORKvd78TAipCwOO6RVpUEk" 
+          alt={currentContent?.title || 'Lesson Image'} 
+          className="max-w-full h-auto max-h-[66vh] object-contain rounded-2xl shadow-lg"
           initial={{ opacity: 0, scale: 0.9 }}
           animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.9 }}
-          transition={{ duration: 0.3 }}
-          className="text-center flex-1 flex flex-col justify-center"
-        >
-          <div className="bg-gradient-to-br from-purple-100 to-pink-100 rounded-full w-16 h-16 sm:w-20 sm:h-20 flex items-center justify-center mx-auto mb-3 shadow-lg border-4 border-purple-200">
-            <span className="text-4xl sm:text-5xl leading-none drop-shadow-md">
-              {currentContent?.image || '🔬'}
-            </span>
-          </div>
-          
-          <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-purple-600 via-pink-500 to-orange-400 bg-clip-text text-transparent mb-3 font-comic">
-            {currentContent?.title || 'Learning Time'}
-          </h3>
-          
-          {/* Visual enhancements for Speed 2 */}
-          <div className="bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl p-3 mt-3 border-2 border-yellow-200 shadow-md">
-            <div className="text-2xl mb-1">🎨</div>
-            <p className="text-xs text-orange-700 font-medium">
-              Visual Learning Mode Active
-            </p>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-    </div>
-    
-    {/* Reading Column */}
-    <div className="reading-column bg-white/80 rounded-2xl p-4 shadow-xl backdrop-blur-lg border border-white/30 flex flex-col min-h-0">
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={currentSection}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -50 }}
-          transition={{ duration: 0.3 }}
-          className="flex-1 flex flex-col justify-center min-h-0"
-        >
-          <div className="prose prose-sm max-w-none flex-1 overflow-y-auto">
-            <p className="text-sm leading-relaxed text-slate-700 mb-4 font-medium text-justify">
-              {currentContent?.content || 'Loading content...'}
-            </p>
-          </div>
-          
-          <div className="bg-gradient-to-br from-green-100/70 to-lime-100/70 rounded-xl p-3 flex items-start gap-3 border-2 border-green-300/60 shadow-lg mt-3">
-            <span className="text-lg flex-shrink-0 mt-1">💡</span>
-            <div>
-              <p className="text-xs font-semibold text-green-800 mb-1">Key Insight:</p>
-              <p className="text-xs text-green-700 leading-relaxed">
-                {currentContent?.tip || 'You\'re doing great! Keep learning!'}
-              </p>
+          transition={{ duration: 0.5 }}
+          whileHover={{ scale: 1.05 }}
+        />
+      </div>
+
+      {/* Right Column: Text Content */}
+      <div className="bg-white text-gray-800 rounded-2xl p-8 flex flex-col min-h-0">
+        <div className="flex-1 overflow-y-auto">
+          <h3 className="text-3xl font-bold text-blue-900 mb-4">{currentContent?.title || 'Lesson Title'}</h3>
+          <p className="text-lg mb-6 leading-relaxed">
+            {currentContent?.content || 'Loading lesson content...'}
+          </p>
+
+          {currentContent?.tip && (
+            <div className="bg-yellow-300 text-yellow-900 rounded-xl p-4">
+              <h4 className="font-bold flex items-center gap-2 mb-2"><span className="text-xl">🌟</span> Fun Fact!</h4>
+              <p>{currentContent.tip}</p>
             </div>
-          </div>
-        </motion.div>
-      </AnimatePresence>
-      
-      {/* Navigation at bottom of reading column */}
-      <div className="flex items-center justify-between gap-2 mt-3 pt-3 border-t border-gray-200 flex-shrink-0">
-        <button 
-          onClick={onPrevious}
-          type="button"
-          className={`px-4 py-2 text-sm font-bold text-white rounded-xl transition-all duration-300 flex items-center justify-center ${
-            currentSection === 0 
-              ? 'bg-gray-400 cursor-not-allowed' 
-              : 'bg-gradient-to-r from-blue-400 to-purple-400 cursor-pointer hover:scale-105 hover:shadow-lg'
-          }`}
-          disabled={currentSection === 0}
-        >
-          <BackIcon />
-          Previous
-        </button>
-        
-        <div className="text-center">
-          <div className="text-xs text-gray-600 font-medium">
-            {currentSection + 1} of {totalSections}
-          </div>
+          )}
         </div>
         
-        <button 
-          onClick={onNext}
-          type="button"
-          className={`px-4 py-2 text-sm font-bold text-white rounded-xl transition-all duration-300 flex items-center justify-center hover:scale-105 hover:shadow-lg ${
-            currentSection === totalSections - 1 
-              ? 'bg-gradient-to-r from-yellow-400 via-orange-400 to-red-400 animate-pulse' 
-              : 'bg-gradient-to-r from-green-500 via-lime-400 to-yellow-300'
-          }`}
-        >
-          {currentSection === totalSections - 1 ? '🎉 Complete! ' : 
-             <>Next <ForwardIcon /></>
-          }
-        </button>
+        {/* Navigation */}
+        <div className="flex items-center justify-between mt-8">
+            <button 
+              onClick={onPrevious} 
+              disabled={currentSection === 0}
+              className="bg-gray-300 text-gray-700 font-bold py-2 px-6 rounded-full disabled:opacity-50"
+            >
+              Previous
+            </button>
+            <button 
+              onClick={onNext}
+              className="bg-green-500 text-white font-bold py-2 px-8 rounded-full"
+            >
+              {currentSection === totalSections - 1 ? 'Finish' : 'Next'}
+            </button>
+        </div>
       </div>
     </div>
-  </div>
-)
+  )
+}
 
 // Speed 3 (🦁): Visual + Kinesthetic Layout
 export const Speed3Layout: React.FC<SpeedLayoutProps> = ({ 
