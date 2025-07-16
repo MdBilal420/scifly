@@ -75,7 +75,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
           <div className="text-center bg-white/90 backdrop-blur rounded-3xl p-6 max-w-md">
             <div className="text-6xl mb-4">😔</div>
             <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
-            <p className="text-gray-600 mb-4">I couldn't generate the quiz questions. Let's try again!</p>
+            <p className="text-gray-600 mb-4">I couldn&apos;t generate the quiz questions. Let&apos;s try again!</p>
             <PrimaryButton
               onClick={() => {
                 dispatch(clearErrors())
@@ -132,7 +132,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
 
   const getScoreMessage = () => {
     const percentage = (score / quizQuestions.length) * 100
-    if (percentage === 100) return `Perfect! You're a ${currentTopic.title} expert! 🌟`
+    if (percentage === 100) return `Perfect! You&apos;re a ${currentTopic.title} expert! 🌟`
     if (percentage >= 80) return `Great job! You really understand ${currentTopic.title}! 🎉`
     if (percentage >= 60) return `Good work! Keep learning about ${currentTopic.title}! 👍`
     return `Nice try! Want to learn more about ${currentTopic.title}? 🤔`
@@ -246,7 +246,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
         <h1 className="font-comic text-2xl font-bold text-white mb-2">
           SciFly {currentTopic.title} Quiz 🧩
         </h1>
-        <p className="text-white/80">Test what you've learned!</p>
+        <p className="text-white/80">Test what you&apos;ve learned!</p>
       </motion.div>
 
       {/* Question Card */}
@@ -312,4 +312,11 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
   )
 }
 
-export default QuizScreen 
+export default QuizScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

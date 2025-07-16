@@ -256,7 +256,7 @@ export const Phase3Demo: React.FC = () => {
           <p>Contextual hints that adapt to your learning style and current struggles</p>
           <div className="demo-hint">
             <div className="hint-example">
-              "Try thinking about how plants and animals depend on each other..."
+              &quot;Try thinking about how plants and animals depend on each other...&quot;
             </div>
             <div className="hint-type">Conceptual Hint</div>
           </div>
@@ -267,7 +267,7 @@ export const Phase3Demo: React.FC = () => {
           <p>Questions that adjust difficulty based on your comprehension level</p>
           <div className="demo-question">
             <div className="question-example">
-              "Which organism would be most affected if plants disappeared from this ecosystem?"
+              &quot;Which organism would be most affected if plants disappeared from this ecosystem?&quot;
             </div>
             <div className="question-difficulty">Difficulty: Adaptive (Medium)</div>
           </div>
@@ -278,7 +278,7 @@ export const Phase3Demo: React.FC = () => {
           <p>Encouragement and guidance tailored to your learning preferences</p>
           <div className="demo-feedback">
             <div className="feedback-example">
-              "Great job identifying the food chain! Try to think about what happens to energy as it moves through the chain."
+              &quot;Great job identifying the food chain! Try to think about what happens to energy as it moves through the chain.&quot;
             </div>
             <div className="feedback-type">Encouraging Feedback</div>
           </div>
@@ -332,7 +332,7 @@ export const Phase3Demo: React.FC = () => {
           <div className="prediction-item">
             <span className="prediction-icon">🎯</span>
             <span className="prediction-text">
-              Optimal next topic: "Food Webs" (85% success probability)
+              Optimal next topic: &quot;Food Webs&quot; (85% success probability)
             </span>
           </div>
           <div className="prediction-item">

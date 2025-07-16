@@ -299,7 +299,7 @@ export const Phase2Demo: React.FC = () => {
               </div>
             </div>
             <div className="demo-features">
-              <h3>What you'll experience:</h3>
+              <h3>What you&apos;ll experience:</h3>
               <ul>
                 <li>🎨 <strong>Speed 1-2:</strong> Visual learning with infographics and animations</li>
                 <li>🎯 <strong>Speed 3:</strong> Interactive activities like drag & drop, sliders</li>

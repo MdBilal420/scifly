@@ -83,7 +83,7 @@ const UserOnboardingDialog: React.FC = () => {
               Welcome to SciFly, {currentUser.name}! 🚀
             </h1>
             <p className="text-white/90 mt-2">
-              Let's personalize your learning experience!
+              Let&apos;s personalize your learning experience!
             </p>
           </div>
 

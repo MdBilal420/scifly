@@ -102,8 +102,8 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           >
             <p className="text-gray-700 font-medium">
               {currentUser 
-                ? `Hey ${currentUser.name}! I've prepared lessons perfect for a ${currentUser.learningSpeed <= 2 ? 'careful explorer like you! We\'ll take our time.' : currentUser.learningSpeed >= 4 ? 'quick thinker like you! Let\'s move fast!' : 'balanced learner like you! Just the right pace.'} Ready? 🦁`
-                : 'Hi! I\'m Simba! Welcome to SciFly! Ready to explore amazing science topics? 🦁'
+                ? `Hey ${currentUser.name}! I&apos;ve prepared lessons perfect for a ${currentUser.learningSpeed <= 2 ? 'careful explorer like you! We&apos;ll take our time.' : currentUser.learningSpeed >= 4 ? 'quick thinker like you! Let&apos;s move fast!' : 'balanced learner like you! Just the right pace.'} Ready? 🦁`
+                : 'Hi! I&apos;m Simba! Welcome to SciFly! Ready to explore amazing science topics? 🦁'
               }
             </p>
           </motion.div>
@@ -116,7 +116,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.4 }}
         >
-          <h3 className="font-comic font-bold text-gray-800 mb-4">Today's Goal</h3>
+          <h3 className="font-comic font-bold text-gray-800 mb-4">Today&apos;s Goal</h3>
           {dailyProgress >= dailyGoal ? (
             <div className="text-center mb-4">
               <div className="text-2xl font-bold text-green-600 animate-bounce">🎉 Goal Smashed! {dailyProgress} lessons completed! 🎉</div>
@@ -207,4 +207,11 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ onNavigate }) => {
   )
 }
 
-export default HomeScreen 
+export default HomeScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

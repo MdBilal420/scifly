@@ -271,4 +271,11 @@ const AchievementsScreen: React.FC<AchievementsScreenProps> = ({ onNavigate }) =
   )
 }
 
-export default AchievementsScreen 
+export default AchievementsScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

@@ -265,4 +265,11 @@ const LandingPage: React.FC = () => {
   )
 }
 
-export default LandingPage 
+export default LandingPage
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

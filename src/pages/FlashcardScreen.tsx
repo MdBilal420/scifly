@@ -470,4 +470,11 @@ const FlashcardScreen: React.FC<FlashcardScreenProps> = ({ onNavigate }) => {
   )
 }
 
-export default FlashcardScreen 
+export default FlashcardScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

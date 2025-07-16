@@ -579,7 +579,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
                     <div className="space-y-2 text-sm text-gray-700">
                       <p>• <strong>Food Chain Base:</strong> Plants are the foundation of most food chains</p>
                       <p>• <strong>Oxygen Production:</strong> Plants produce the oxygen we breathe</p>
-                      <p>• <strong>Carbon Cycle:</strong> Plants help regulate Earth's carbon dioxide levels</p>
+                      <p>• <strong>Carbon Cycle:</strong> Plants help regulate Earth&apos;s carbon dioxide levels</p>
                       <p>• <strong>Energy Source:</strong> Fossil fuels come from ancient plants</p>
                     </div>
                   </div>
@@ -764,7 +764,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
                     <div className="space-y-2 text-sm text-gray-700">
                       <p>• <strong>Reduce Waste:</strong> Use less and recycle more</p>
                       <p>• <strong>Conserve Energy:</strong> Turn off lights and electronics</p>
-                      <p>• <strong>Protect Habitats:</strong> Don't disturb wildlife homes</p>
+                      <p>• <strong>Protect Habitats:</strong> Don&apos;t disturb wildlife homes</p>
                       <p>• <strong>Plant Trees:</strong> Help clean the air</p>
                     </div>
                   </div>
@@ -784,7 +784,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
                     <div className="space-y-2 text-sm text-gray-700">
                       <p>• <strong>Observe:</strong> Watch how the simulation responds to your actions</p>
                       <p>• <strong>Experiment:</strong> Try different settings and see what happens</p>
-                      <p>• <strong>Question:</strong> Ask yourself "why" things happen the way they do</p>
+                      <p>• <strong>Question:</strong> Ask yourself &quot;why&quot; things happen the way they do</p>
                       <p>• <strong>Connect:</strong> Think about how this relates to the real world</p>
                     </div>
                   </div>
@@ -808,4 +808,11 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
   )
 }
 
-export default SimulationScreen 
+export default SimulationScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

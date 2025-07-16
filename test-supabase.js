@@ -7,8 +7,8 @@ const { createClient } = require('@supabase/supabase-js');
 function checkEnvironment() {
   console.log('🔍 Checking environment configuration...\n');
   
-  const supabaseUrl = process.env.REACT_APP_SUPABASE_URL;
-  const supabaseKey = process.env.REACT_APP_SUPABASE_API_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_API_KEY;
   
   if (!supabaseUrl || supabaseUrl === 'https://your-project-ref.supabase.co') {
     console.log('❌ REACT_APP_SUPABASE_URL not configured');

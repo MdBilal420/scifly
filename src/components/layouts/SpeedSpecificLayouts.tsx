@@ -321,19 +321,19 @@ export const Speed4Layout: React.FC<SpeedLayoutProps> = ({
         {/* Mock conversation */}
         <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-xl p-2 border border-blue-200">
           <p className="text-xs text-blue-800 font-medium">
-            "What questions do you have about {currentContent?.title?.toLowerCase()}?"
+            &quot;What questions do you have about {currentContent?.title?.toLowerCase()}?&quot;
           </p>
         </div>
         
         <div className="bg-gradient-to-r from-green-100 to-lime-100 rounded-xl p-2 border border-green-200">
           <p className="text-xs text-green-800 font-medium">
-            "Can you explain the main concept in your own words?"
+            &quot;Can you explain the main concept in your own words?&quot;
           </p>
         </div>
         
         <div className="bg-gradient-to-r from-yellow-100 to-orange-100 rounded-xl p-2 border border-yellow-200">
           <p className="text-xs text-orange-800 font-medium">
-            "How does this relate to what you already know?"
+            &quot;How does this relate to what you already know?&quot;
           </p>
         </div>
       </div>
@@ -420,7 +420,7 @@ export const Speed5Layout: React.FC<SpeedLayoutProps> = ({
               <div>
                 <p className="text-xs font-semibold text-purple-300 mb-1">Advanced Insight:</p>
                 <p className="text-xs text-purple-200 leading-relaxed">
-                  {currentContent?.tip || 'You\'re doing great! Keep learning!'}
+                  {currentContent?.tip || 'You&apos;re doing great! Keep learning!'}
                 </p>
               </div>
             </div>
@@ -464,13 +464,13 @@ export const Speed5Layout: React.FC<SpeedLayoutProps> = ({
       <div className="space-y-2 flex-1 overflow-y-auto">
         <div className="bg-gradient-to-r from-cyan-900/50 to-blue-900/50 rounded-xl p-2 border border-cyan-500/30">
           <p className="text-xs text-cyan-200 font-medium">
-            "Ready to explore advanced concepts?"
+            &quot;Ready to explore advanced concepts?&quot;
           </p>
         </div>
         
         <div className="bg-gradient-to-r from-purple-900/50 to-pink-900/50 rounded-xl p-2 border border-purple-500/30">
           <p className="text-xs text-purple-200 font-medium">
-            "Let's design an experiment together!"
+            &quot;Let&apos;s design an experiment together!&quot;
           </p>
         </div>
       </div>

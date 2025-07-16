@@ -213,4 +213,11 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ onNavigate }) => {
   )
 }
 
-export default ChatScreen 
+export default ChatScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

@@ -442,4 +442,11 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
   )
 }
 
-export default ActivitySelectionScreen 
+export default ActivitySelectionScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

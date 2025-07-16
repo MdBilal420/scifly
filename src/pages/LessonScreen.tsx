@@ -66,8 +66,8 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
             <div className="text-6xl mb-4">📚</div>
             <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">No Lesson Content Available</h2>
             <p className="text-gray-600 mb-4">
-              We couldn't find any lesson content for {currentTopic.title}. 
-              This might be because the content hasn't been generated yet or there was an issue loading it.
+              We couldn&apos;t find any lesson content for {currentTopic.title}. 
+              This might be because the content hasn&apos;t been generated yet or there was an issue loading it.
             </p>
             <PrimaryButton
               onClick={() => {
@@ -97,7 +97,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
           <div className="text-center bg-white/90 backdrop-blur rounded-3xl p-6 max-w-md">
             <div className="text-6xl mb-4">😔</div>
             <h2 className="font-comic text-xl font-bold text-gray-800 mb-2">Oops! Something went wrong</h2>
-            <p className="text-gray-600 mb-4">I couldn't generate the lesson content. Let's try again!</p>
+            <p className="text-gray-600 mb-4">I couldn&apos;t generate the lesson content. Let&apos;s try again!</p>
             <PrimaryButton
               onClick={() => {
                 // Clear error first, then retry
@@ -277,4 +277,11 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   )
 }
 
-export default LessonScreen 
+export default LessonScreen
+
+// Disable static generation since this page uses Redux hooks
+export const getServerSideProps = async () => {
+  return {
+    props: {}
+  }
+} 

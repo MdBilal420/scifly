@@ -1,5 +1,6 @@
 node_modules/
 /node_modules/
+/node_modules/**/*
 /.
 .DS_Store
 .env
@@ -9,6 +10,19 @@ node_modules/
 .env.production.local
 .env.backup
 
+.next/
+.next/**/*
+.next/cache/
+.next/cache/**/*
+
+*.next/
+*.next/**/*
+*.next/cache/
+*.next/cache/**/*
+
+
+
+.next/cache/
 # Cache files
 .eslintcache
 **/cache/
