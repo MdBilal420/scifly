@@ -20,6 +20,8 @@ node_modules/.cache/**/*
 
 *.next
 
+*./langgraph_api
+
 
 build/
 **/build/
