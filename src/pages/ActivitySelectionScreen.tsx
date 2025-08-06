@@ -59,6 +59,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
+          {
+            id: 'storybook',
+            title: 'View Storybook',
+            description: 'Read an AI-generated story',
+            icon: '📖',
+            color: 'from-yellow-500 to-yellow-600',
+            primary: false
+          },
           // {
           //   id: 'simulation',
           //   title: 'Interactive Simulation',
@@ -292,6 +300,9 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
       case 'flashcards':
         onNavigate('flashcards')
         break
+     case 'storybook':
+       onNavigate('storybook')
+       break
       case 'chat':
         onNavigate('chat')
         break
