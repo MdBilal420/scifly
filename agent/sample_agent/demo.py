@@ -7,6 +7,16 @@ import os
 from dotenv import load_dotenv
 load_dotenv() # pylint: disable=wrong-import-position
 
+from IPython.display import Image, Markdown, display
+from google import genai
+from google.genai.types import GenerateContentConfig, Part
+import base64        
+
+LOCATION = "global"
+
+client = genai.Client(vertexai=True, project="bookingagent-466314", location=LOCATION)
+MODEL_ID = "gemini-2.0-flash-preview-image-generation"
+
 # Debug: Check if environment variables are loaded
 print(f"DEBUG: GROQ_API_KEY loaded: {'Yes' if os.getenv('GROQ_API_KEY') else 'No'}")
 print(f"DEBUG: Environment variables loaded")
@@ -14,6 +24,7 @@ print(f"DEBUG: Environment variables loaded")
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
+from pydantic import BaseModel
 from copilotkit.integrations.fastapi import add_fastapi_endpoint
 from copilotkit import CopilotKitSDK, LangGraphAgent
 from sample_agent.agent import graph
@@ -72,6 +83,45 @@ print("DEBUG: CopilotKit SDK created successfully")
 
 add_fastapi_endpoint(app, sdk, "/copilotkit")
 
+
+class StorybookRequest(BaseModel):
+    prompt: str
+
+
+@app.post("/generate-storybook")
+def generate_storybook_endpoint(request: StorybookRequest):
+    """Endpoint to generate a storybook."""
+    print("DEBUG: Generate storybook endpoint called")
+    try:
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=request.prompt,
+            config=GenerateContentConfig(
+                response_modalities=["TEXT", "IMAGE"],
+                candidate_count=1,
+                safety_settings=[
+                    {"method": "PROBABILITY"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT"},
+                    {"threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                ],
+            ),
+        )
+        print("DEBUG: Response received from model")
+        content_parts = []                                                                                                                                                    
+        for part in response.candidates[0].content.parts:                                                                                                                     
+            if part.text:                                                                                                                                                     
+                content_parts.append({"type": "text", "data": part.text})                                                                                                     
+            if part.inline_data:                                                                                                                                                 
+                encoded_image = base64.b64encode(part.inline_data.data).decode("utf-8")                                                                                       
+                content_parts.append({"type": "image", "data": encoded_image, "mime_type": part.inline_data.mime_type})                                                                                                                                                                                                                      
+        return {"success": True, "storybook": content_parts} 
+    except Exception as e:
+        print(f"DEBUG: Generate storybook error: {e}")
+        import traceback
+        traceback.print_exc()
+        return {"success": False, "error": str(e)}
+
+
 @app.get("/health")
 def health():
     """Health check."""
@@ -94,7 +144,7 @@ async def test_agent_endpoint():
 
 def main():
     """Run the uvicorn server."""
-    port = int(os.getenv("PORT", "8080"))
+    port = int(os.getenv("PORT", "8000"))
     uvicorn.run(
         "sample_agent.demo:app",
         host="0.0.0.0",
