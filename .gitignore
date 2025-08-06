@@ -27,3 +27,6 @@ build/
 **/build/
 **/.build/
 
+**/pycache/
+**/__pycache__/
+
