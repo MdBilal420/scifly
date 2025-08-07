@@ -41,7 +41,7 @@ export const generatePageImage = createAsyncThunk(
   'storybook/generateImage',
   async ({ pageIndex, text, topic }: { pageIndex: number, text: string, topic: Topic }, { rejectWithValue }) => {
     try {
-      const prompt = `Using an Anime art style, create a storybook image for my brother Akito, who is in grade 5 and learning about ${topic.title}. 
+      const prompt = `Using an Anime art style, create a storybook image for my brother Ben, who is in grade 5 and learning about ${topic.title}.
       The image should visually represent the story described in the following text ${text}, but do not include any text or captions on the image itself. 
       Focus entirely on using visuals to convey the scene and main ideas from the story.
 

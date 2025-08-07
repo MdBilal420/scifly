@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useAppDispatch, useAppSelector } from '../hooks/redux';
 import { generateStorybookPages, generatePageImage, clearErrors, resetStorybook } from '../features/storybook/storybookSlice';
@@ -53,13 +53,15 @@ const StorybookScreen: React.FC<StorybookScreenProps> = ({ onNavigate }) => {
   const dispatch = useAppDispatch();
   const [currentPage, setCurrentPage] = useState(0);
   const [direction, setDirection] = useState(0);
+  const isStoryGenarated = useRef(false);
   
   const { currentTopic } = useAppSelector((state) => state.topics);
   const { pages, isGeneratingContent, contentError } = useAppSelector((state) => state.storybook);
   const { currentUser } = useAppSelector((state) => state.user);
 
   useEffect(() => {
-    if (currentTopic) {
+    if (currentTopic && !isStoryGenarated.current) {
+      isStoryGenarated.current = true;
       dispatch(generateStorybookPages(currentTopic));
     }
     return () => {
@@ -69,12 +71,13 @@ const StorybookScreen: React.FC<StorybookScreenProps> = ({ onNavigate }) => {
 
   useEffect(() => {
     if (currentTopic && pages.length > 0) {
-      const page = pages[currentPage];
-      if (page && !page.image && !page.isGeneratingImage && !page.imageError) {
-        dispatch(generatePageImage({ pageIndex: currentPage, text: page.text, topic: currentTopic }));
-      }
+      pages.forEach((page, index) => {
+        if (page && !page.image && !page.isGeneratingImage && !page.imageError) {
+          dispatch(generatePageImage({ pageIndex: index, text: page.text, topic: currentTopic }));
+        }
+      });
     }
-  }, [pages, currentPage, currentTopic, dispatch]);
+  }, [pages, currentTopic, dispatch]);
 
   const handleNextPage = () => {
     if (currentPage < pages.length - 1) {
