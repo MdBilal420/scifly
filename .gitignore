@@ -26,6 +26,7 @@ node_modules/.cache/**/*
 build/
 **/build/
 **/.build/
+*.build
 
 **/pycache/
 **/__pycache__/
