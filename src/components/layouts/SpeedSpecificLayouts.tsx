@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MdArrowBack, MdArrowForward } from 'react-icons/md'
 
