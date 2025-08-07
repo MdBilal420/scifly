@@ -9,6 +9,7 @@ import adaptiveReducer from './features/adaptive/adaptiveSlice'
 import aiContentReducer from './features/aiContent/aiContentSlice'
 import smartTutorReducer from './features/smartTutor/smartTutorSlice'
 import flashcardReducer from './features/flashcards/flashcardSlice'
+import storybookReducer from './features/storybook/storybookSlice'
 
 // Interaction tracking middleware
 const interactionTrackingMiddleware = (store: any) => (next: any) => (action: any) => {
@@ -62,6 +63,7 @@ export const store = configureStore({
     aiContent: aiContentReducer,
     smartTutor: smartTutorReducer,
     flashcards: flashcardReducer,
+    storybook: storybookReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

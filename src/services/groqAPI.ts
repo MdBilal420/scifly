@@ -32,7 +32,7 @@ export interface FlashcardData {
 }
 
 class GroqAPIService {
-  private async makeRequest(messages: any[], maxRetries: number = 3): Promise<string> {
+  private async makeRequest(messages: any[], maxRetries: number = 3, jsonOutput: boolean = false): Promise<string> {
     for (let attempt = 1; attempt <= maxRetries; attempt++) {
       try {
         
@@ -40,20 +40,26 @@ class GroqAPIService {
         const controller = new AbortController()
         const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
         
+        const body: any = {
+          messages,
+          model: 'llama3-8b-8192', // Use the model that works in our test
+          temperature: 0.7,
+          max_tokens: 4000, // Increase for flashcard generation to prevent truncation
+          top_p: 1,
+          stream: false
+        };
+
+        if (jsonOutput) {
+          body.response_format = { type: 'json_object' };
+        }
+        
         const response = await fetch(GROQ_API_URL, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${GROQ_API_KEY}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            messages,
-            model: 'llama3-8b-8192', // Use the model that works in our test
-            temperature: 0.7,
-            max_tokens: 4000, // Increase for flashcard generation to prevent truncation
-            top_p: 1,
-            stream: false
-          }),
+          body: JSON.stringify(body),
           signal: controller.signal
         })
 
@@ -683,7 +689,108 @@ Return ONLY a valid JSON array of ${deckSize} flashcards. No other text.`
     
     throw new Error('Could not repair truncated JSON')
   }
+  async generateStorybookPages(topic: Topic, userProfile?: UserProfile): Promise<string[]> {
+    const prompt = `Create an engaging, easy-to-understand storybook for a Grade 5 student named Ben about the topic "${topic.title}". Incorporate and clearly explain the following key learning points: ${topic.keyLearningPoints.join(', ')}. Use the provided learning profile—LEARNING PROFILE: ${userProfile ? `${userProfile.name}, Learning Speed: ${userProfile.learningSpeed}/5` : 'Default student'}—to adjust story complexity, pacing, and vocabulary accordingly.
+
+Before drafting the story, plan the progression: list the key learning points and assign them to specific parts or pages, considering the narrative flow, Ben’s grade level, attention span, and learning speed. Choose relatable adventures and age-appropriate examples or dialogue for Ben, ensuring each key learning point is naturally woven into the story.
+
+**Requirements:**
+- The story should be divided into multiple "pages" (sections), each as a single string of 3–8 well-structured, grade-appropriate sentences. 
+- The total number of pages is flexible—choose as many as needed (minimum of 4, maximum of 7) to ensure the story is engaging, smooth, and all learning points are clearly addressed without feeling rushed or stretched.
+- Every provided key learning point must be clearly addressed somewhere in the story.
+- Ben must be the main character, facing relatable situations or adventures.
+- Avoid technical jargon unless explained simply within the story.
+- Keep the tone engaging, fun, and informative.
+- Adjust language, pacing, and complexity to Ben’s learning profile when given.
+
+**Process Steps:**
+1. List the key learning points and briefly plan where they’ll be integrated across the pages.
+2. Develop the story progression, ensuring logical flow and natural integration of learning points.
+3. Write each page’s text, checking for engagement, clarity, smooth transitions, and grade-appropriate language.
+4. Double-check that all learning points are covered and the narrative remains consistent, engaging, and age-appropriate.
+
+# Output Format
+
+- Output a JSON object with a single key "pages", whose value is an array of strings (each string is a story “page”). 
+- Each page must consist of 3–8 sentences, using clear language suitable for grade 5.
+- Example:  
+{
+  "pages": [
+    "Once upon a time, ... (Page 1)",
+    "Ben noticed that... (Page 2)",
+    "[...]", 
+    "In the end, Ben learned... (Final Page)"
+  ]
+}
+
+# Examples
+
+Sample Input:  
+topic.title = "The Water Cycle"  
+topic.keyLearningPoints = ["Evaporation", "Condensation", "Precipitation", "Collection"]  
+userProfile = {  
+  "name": "Ben",  
+  "learningSpeed": 3  
+}
+
+Sample Output:  
+{
+  "pages": [
+    "Ben loved watching the clouds from his window. One sunny day, he wondered how rain forms. It all starts with the sun warming up puddles, turning water into invisible vapor. This process is called evaporation.",
+    "As Ben went for a walk, he saw that his breath made tiny clouds in the cold air. He realized the vapor from lakes and rivers also gathered together in the sky. When the water vapor cools down, it becomes droplets. This is called condensation.",
+    "The next day, dark clouds gathered as Ben played outside. Suddenly, raindrops began to fall from the sky. This rain, he now knew, was called precipitation, when water returns to earth from the clouds.",
+    "Ben watched as the rainwater collected in puddles and streams, filling up ponds and rivers once again. He realized this completed the water cycle, returning the water back to be used again.",
+    "By the end of his adventure, Ben understood the whole water cycle: evaporation, condensation, precipitation, and collection. He felt proud to see how nature works all around him every day."
+  ]
+}
+(Note: Real story pages should be 3-8 sentences and as detailed and engaging as needed for a Grade 5 student.)
+
+# Important Reminders
+
+- Page count is flexible (minimum 4, maximum 7); use as many pages as needed to make the story engaging and clear.
+- Every page should have 3–8 sentences.
+- All key learning points must be covered.
+- Tailor narrative style, vocabulary, story pace, and examples to Ben’s grade and learning profile.
+- Ben should be the protagonist in a relatable, age-appropriate adventure.
+- JSON format only; see output example.
+
+# Objective Reminder
+
+Write an engaging, flexible-length (4-7 pages) JSON storybook for a grade 5 student named Ben on "${topic.title}", covering: ${topic.keyLearningPoints.join(', ')} in an age-appropriate and interesting way, tailored to the provided learning profile, and following the specified output format.
+
+At the end of your response, double-check that you have included:
+- All key learning points
+- A suitable number of distinct, grade-appropriate, well-structured story pages featuring Ben`;
+
+    try {
+      const response = await this.makeRequest(
+        [
+          {
+            role: 'system',
+            content: 'You are a creative storyteller for children. You must respond with ONLY a valid JSON object with a "pages" key containing an array of strings.'
+          },
+          {
+            role: 'user',
+            content: prompt
+          }
+        ],
+        3, // maxRetries
+        true // jsonOutput
+      );
+
+      const data = JSON.parse(response);
+
+      if (data && Array.isArray(data.pages) && data.pages.every((p: any) => typeof p === 'string')) {
+        return data.pages;
+      } else {
+        throw new Error('Invalid JSON structure for storybook pages.');
+      }
+    } catch (error) {
+      console.error('Failed to generate storybook pages:', error);
+      return [`Once upon a time, in a land of science, Ben wanted to learn about ${topic.title}.`, 'Let\'s explore the wonders of this topic together!', 'There is so much to discover.', 'Every new fact is a new adventure.', 'The end... for now!'];
+    }
+  }
 }
 
 export const groqAPI = new GroqAPIService()
-export default groqAPI 
+export default groqAPI

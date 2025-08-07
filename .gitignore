@@ -18,8 +18,16 @@ node_modules/
 node_modules/.cache/
 node_modules/.cache/**/*
 
+*.next
+
+*./langgraph_api
+
 
 build/
 **/build/
 **/.build/
+*.build
+
+**/pycache/
+**/__pycache__/
 
