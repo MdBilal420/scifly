@@ -14,8 +14,9 @@ import SimulationScreen from './pages/SimulationScreen'
 import StorybookScreen from './pages/StorybookScreen'
 import LandingPage from './pages/LandingPage'
 import UserOnboardingDialog from './components/UserOnboardingDialog'
+import PlayGameScreen from './pages/PlayGameScreen'
 
-type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity' | 'flashcards' | 'simulation' | 'storybook'
+type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity' | 'flashcards' | 'simulation' | 'storybook' | 'playgame'
 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('home')
@@ -64,6 +65,8 @@ const AppContent: React.FC = () => {
         return <SimulationScreen onNavigate={handleNavigate} />
      case 'storybook':
        return <StorybookScreen onNavigate={handleNavigate} />
+      case 'playgame':
+        return <PlayGameScreen onNavigate={handleNavigate} />
       default:
         return <HomeScreen onNavigate={handleNavigate} />
     }

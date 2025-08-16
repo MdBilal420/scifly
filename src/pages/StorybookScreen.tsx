@@ -117,7 +117,7 @@ const StorybookScreen: React.FC<StorybookScreenProps> = ({ onNavigate }) => {
     return null;
   }
 
-  if (isGeneratingContent) {
+  if (isGeneratingContent || pages[0]?.isGeneratingImage) {
     return (
       <DynamicBackground theme={currentTopic.backgroundTheme}>
         <div className="min-h-screen flex items-center justify-center p-4">

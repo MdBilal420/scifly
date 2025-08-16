@@ -67,6 +67,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-yellow-500 to-yellow-600',
             primary: false
           },
+          {
+            id: 'playgame',
+            title: 'Play Game',
+            description: 'Play a simple game for this topic',
+            icon: '🎮',
+            color: 'from-pink-500 to-pink-600',
+            primary: false
+          }
           // {
           //   id: 'simulation',
           //   title: 'Interactive Simulation',
@@ -102,6 +110,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
+          {
+            id: 'playgame',
+            title: 'Play Game',
+            description: 'Play a simple game for this topic',
+            icon: '🎮',
+            color: 'from-pink-500 to-pink-600',
+            primary: false
+          }
           // {
           //   id: 'simulation',
           //   title: 'Interactive Simulation',
@@ -137,6 +153,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
+          {
+            id: 'playgame',
+            title: 'Play Game',
+            description: 'Play a simple game for this topic',
+            icon: '🎮',
+            color: 'from-pink-500 to-pink-600',
+            primary: false
+          }
           // {
           //   id: 'practice',
           //   title: 'Practice Mode',
@@ -180,6 +204,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
+          {
+            id: 'playgame',
+            title: 'Play Game',
+            description: 'Play a simple game for this topic',
+            icon: '🎮',
+            color: 'from-pink-500 to-pink-600',
+            primary: false
+          }
           // {
           //   id: 'chat',
           //   title: 'AI Discussion',
@@ -231,6 +263,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
+          {
+            id: 'playgame',
+            title: 'Play Game',
+            description: 'Play a simple game for this topic',
+            icon: '🎮',
+            color: 'from-pink-500 to-pink-600',
+            primary: false
+          }
           // {
           //   id: 'simulation',
           //   title: 'Interactive Simulation',
@@ -274,6 +314,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
             color: 'from-purple-500 to-purple-600',
             primary: false
           },
+          {
+            id: 'playgame',
+            title: 'Play Game',
+            description: 'Play a simple game for this topic',
+            icon: '🎮',
+            color: 'from-pink-500 to-pink-600',
+            primary: false
+          }
           // {
           //   id: 'simulation',
           //   title: 'Interactive Simulation',
@@ -315,6 +363,9 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
         // These are future features - for now, navigate to lesson
         console.log(`${activityId} mode selected - redirecting to lesson for now`)
         onNavigate('lesson')
+        break
+      case 'playgame':
+        onNavigate('playgame')
         break
       default:
         onNavigate('lesson')
