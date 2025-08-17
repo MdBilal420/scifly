@@ -93,3 +93,4 @@ echo -e "${YELLOW}🔧 To update your frontend, change the API base URL to:${NC}
 echo "  ${SERVICE_URL}"
 echo ""
 echo -e "${GREEN}🎉 Your FastAPI server is now running on Google Cloud Run!${NC}"
+
