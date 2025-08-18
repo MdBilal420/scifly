@@ -11,6 +11,27 @@ SERVICE_NAME=${2:-"scifly-api"}
 REGION=${3:-"us-central1"}
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
+# Load environment variables from YAML file if it exists
+if [ -f "../env.local.yaml" ]; then
+    echo -e "${YELLOW}📋 Loading environment variables from env.local.yaml file...${NC}"
+    # Use Python to parse YAML and export environment variables
+    eval "$(python3 -c "
+import yaml
+import os
+with open('../env.local.yaml', 'r') as file:
+    env_vars = yaml.safe_load(file)
+for key, value in env_vars.items():
+    if isinstance(value, str):
+        print(f'export {key}=\"{value}\"')
+")"
+elif [ -f "../env.yaml" ]; then
+    echo -e "${YELLOW}⚠️  Found env.yaml but not env.local.yaml. Please copy env.yaml to env.local.yaml and fill in your actual values.${NC}"
+    exit 1
+else
+    echo -e "${YELLOW}⚠️  No env.local.yaml file found. Please create one with your environment variables.${NC}"
+    exit 1
+fi
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -36,6 +57,35 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
+# Check if required environment variables are set
+echo -e "${YELLOW}🔍 Checking environment variables...${NC}"
+if [ -z "$OPENAI_API_KEY" ]; then
+    echo -e "${RED}❌ OPENAI_API_KEY is not set. Please set it in your env.local.yaml file.${NC}"
+    exit 1
+fi
+
+if [ -z "$GROQ_API_KEY" ]; then
+    echo -e "${RED}❌ GROQ_API_KEY is not set. Please set it in your env.local.yaml file.${NC}"
+    exit 1
+fi
+
+if [ -z "$GOOGLE_API_KEY" ]; then
+    echo -e "${RED}❌ GOOGLE_API_KEY is not set. Please set it in your env.local.yaml file.${NC}"
+    exit 1
+fi
+
+if [ -z "$SERPER_API_KEY" ]; then
+    echo -e "${RED}❌ SERPER_API_KEY is not set. Please set it in your env.local.yaml file.${NC}"
+    exit 1
+fi
+
+if [ -z "$TAVILY_API_KEY" ]; then
+    echo -e "${RED}❌ TAVILY_API_KEY is not set. Please set it in your env.local.yaml file.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✅ All required environment variables are set.${NC}"
+
 # Set the project
 echo -e "${YELLOW}📋 Setting Google Cloud project...${NC}"
 gcloud config set project ${PROJECT_ID}
@@ -51,8 +101,8 @@ gcloud auth configure-docker
 
 # Build the Docker image
 echo -e "${YELLOW}🏗️  Building Docker image...${NC}"
-cd ../agent
-docker build -t ${IMAGE_NAME} .
+cd ..
+docker build --platform linux/amd64 -t ${IMAGE_NAME} .
 
 # Push the image to Google Container Registry
 echo -e "${YELLOW}📤 Pushing image to Google Container Registry...${NC}"
@@ -73,8 +123,18 @@ gcloud run deploy ${SERVICE_NAME} \
     --timeout 300 \
     --concurrency 80 \
     --set-env-vars="PYTHONPATH=/app" \
-    --set-env-vars="PORT=8080" \
-    --set-env-vars="HOST=0.0.0.0"
+    --set-env-vars="HOST=0.0.0.0" \
+    --set-env-vars="OPENAI_API_KEY=${OPENAI_API_KEY}" \
+    --set-env-vars="GROQ_API_KEY=${GROQ_API_KEY}" \
+    --set-env-vars="GOOGLE_API_KEY=${GOOGLE_API_KEY}" \
+    --set-env-vars="SERPER_API_KEY=${SERPER_API_KEY}" \
+    --set-env-vars="TAVILY_API_KEY=${TAVILY_API_KEY}" \
+    --set-env-vars="LANGSMITH_TRACING=${LANGSMITH_TRACING:-false}" \
+    --set-env-vars="LANGSMITH_ENDPOINT=${LANGSMITH_ENDPOINT}" \
+    --set-env-vars="LANGSMITH_API_KEY=${LANGSMITH_API_KEY}" \
+    --set-env-vars="LANGSMITH_PROJECT=${LANGSMITH_PROJECT:-scifly-agent}" \
+    --set-env-vars="MODEL=${MODEL:-openai}" \
+    --set-env-vars="RELOAD=${RELOAD:-true}"
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region=${REGION} --format='value(status.url)')

@@ -7,14 +7,13 @@ import os
 from dotenv import load_dotenv
 load_dotenv() # pylint: disable=wrong-import-position
 
-from IPython.display import Image, Markdown, display
-from google import genai
-from google.genai.types import GenerateContentConfig, Part
+import google.generativeai as genai
 import base64        
 
 LOCATION = "global"
 
-client = genai.Client(vertexai=True, project="bookingagent-466314", location=LOCATION)
+# Configure Google Generative AI
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 MODEL_ID = "gemini-2.0-flash-preview-image-generation"
 
 # Debug: Check if environment variables are loaded
@@ -34,7 +33,14 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "http://localhost:3001"],  # React app origins
+    allow_origins=[
+        "http://localhost:3000", 
+        "http://localhost:3001",
+        "https://your-frontend-domain.com",  # Update with your actual domain
+        "https://scifly.web.app",  # If using Firebase Hosting
+        "https://scifly.firebaseapp.com",  # If using Firebase Hosting
+        "https://scifly.netlify.app",  # Netlify deployment
+    ],  # React app origins
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -93,27 +99,20 @@ def generate_storybook_endpoint(request: StorybookRequest):
     """Endpoint to generate a storybook."""
     print("DEBUG: Generate storybook endpoint called")
     try:
-        response = client.models.generate_content(
-            model=MODEL_ID,
-            contents=request.prompt,
-            config=GenerateContentConfig(
-                response_modalities=["TEXT", "IMAGE"],
-                candidate_count=1,
-                safety_settings=[
-                    {"method": "PROBABILITY"},
-                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT"},
-                    {"threshold": "BLOCK_MEDIUM_AND_ABOVE"},
-                ],
-            ),
-        )
+        # Use Google Generative AI for text generation
+        model = genai.GenerativeModel('gemini-2.0-flash-exp')
+        response = model.generate_content(request.prompt)
+        
         print("DEBUG: Response received from model")
-        content_parts = []                                                                                                                                                    
-        for part in response.candidates[0].content.parts:                                                                                                                     
-            if part.text:                                                                                                                                                     
-                content_parts.append({"type": "text", "data": part.text})                                                                                                     
-            if part.inline_data:                                                                                                                                                 
-                encoded_image = base64.b64encode(part.inline_data.data).decode("utf-8")                                                                                       
-                content_parts.append({"type": "image", "data": encoded_image, "mime_type": part.inline_data.mime_type})                                                                                                                                                                                                                      
+        content_parts = []
+        
+        # Add text content
+        if response.text:
+            content_parts.append({"type": "text", "data": response.text})
+        
+        # Note: Image generation requires a different approach with Google Generative AI
+        # For now, we'll return text-only content
+        
         return {"success": True, "storybook": content_parts} 
     except Exception as e:
         print(f"DEBUG: Generate storybook error: {e}")
@@ -149,5 +148,5 @@ def main():
         "sample_agent.demo:app",
         host="0.0.0.0",
         port=port,
-        reload=True,
+        reload=False,  # Disable reload for production
     )

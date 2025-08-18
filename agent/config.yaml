@@ -1,0 +1,47 @@
+# SciFly API Configuration
+# Copy this file to config.local.yaml and fill in your actual API keys
+
+# API Keys (Required)
+api_keys:
+  openai: "your_openai_api_key_here"
+  groq: "your_groq_api_key_here"
+  google: "your_google_api_key_here"
+
+# LangSmith Configuration (Optional - for debugging)
+langsmith:
+  tracing_v2: false
+  api_key: "your_langsmith_api_key_here"
+  project: "scifly-agent"
+
+# Server Configuration
+server:
+  port: 8080
+  host: "0.0.0.0"
+  python_path: "/app"
+
+# CORS Configuration
+cors:
+  allowed_origins:
+    - "http://localhost:3000"
+    - "http://localhost:3001"
+    - "https://your-frontend-domain.com"
+    - "https://scifly.web.app"
+    - "https://scifly.firebaseapp.com"
+
+# Cloud Run Configuration
+cloud_run:
+  project_id: "bookingagent-466314"
+  service_name: "scifly-api"
+  region: "us-central1"
+  memory: "1Gi"
+  cpu: 1
+  max_instances: 10
+  min_instances: 0
+  timeout: 300
+  concurrency: 80
+
+# Environment Variables (will be set in Cloud Run)
+environment:
+  PYTHONPATH: "/app"
+  PORT: 8080
+  HOST: "0.0.0.0"

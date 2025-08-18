@@ -1,5 +1,5 @@
 # Use Python 3.11 slim image for smaller size
-FROM python:3.11-slim
+FROM --platform=linux/amd64 python:3.11-slim
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
@@ -41,5 +41,5 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8080/health || exit 1
 
 # Run the application
-CMD ["python", "main.py"]
+CMD ["python", "-m", "uvicorn", "sample_agent.demo:app", "--host", "0.0.0.0", "--port", "8080", "--workers", "1"]
 
