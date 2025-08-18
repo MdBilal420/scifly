@@ -1,9 +1,9 @@
 import { motion } from 'framer-motion'
 import React, { Suspense, lazy, useState } from 'react'
 import UserMenu from '../components/UserMenu'
-// Lazy-load the heavy 3D scene to keep initial bundle lean
+// Lazy-load the heavy 3D scenes to keep initial bundle lean
 const WaterCycleQuest3D = lazy(() => import('../components/watercycle3d/WaterCycleQuest3D'))
-const HeatRayGame = lazy(() => import('../components/games/HeatRayGame'))
+const HeatRayGame3D = lazy(() => import('../components/games/heatray3d/HeatRayGame3D'))
 
 interface PlayGameScreenProps {
   onNavigate: (screen: string) => void
@@ -54,18 +54,18 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
             >
               <div className="text-6xl mb-4">☀️🎯</div>
               <h2 className="font-comic text-2xl font-bold text-yellow-600 mb-3">
-                Heat Ray Target Practice
+                3D Heat Ray Target Practice
               </h2>
               <p className="text-gray-700 mb-4">
-                Help Sunny the Sun use heat rays to evaporate water targets! Learn about evaporation through precise aiming and timing.
+                Control the sun in immersive 3D to evaporate water targets! Experience evaporation with realistic physics and stunning visuals.
               </p>
               <div className="flex justify-center gap-2 mb-4">
-                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">🎮 Action</span>
+                <span className="bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm">🎮 3D Action</span>
                 <span className="bg-orange-100 text-orange-800 px-3 py-1 rounded-full text-sm">☀️ Evaporation</span>
-                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">🎯 Aiming</span>
+                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">🥽 Immersive</span>
               </div>
               <div className="text-sm text-gray-600">
-                <strong>Focus:</strong> Ocean Evaporation • <strong>Age:</strong> 6-12 years • <strong>Duration:</strong> 5-10 min
+                <strong>Focus:</strong> 3D Water Evaporation • <strong>Age:</strong> 6-12 years • <strong>Duration:</strong> 5-10 min
               </div>
             </motion.div>
 
@@ -136,7 +136,7 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
         </div>
       }>
         {gameType === '3d-quest' && <WaterCycleQuest3D />}
-        {gameType === 'heat-ray' && <HeatRayGame />}
+        {gameType === 'heat-ray' && <HeatRayGame3D onBackToMenu={() => setGameType('menu')} />}
       </Suspense>
       
       {/* Back button overlay for games */}
