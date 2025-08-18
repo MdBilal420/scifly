@@ -32,306 +32,58 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
 
   // Get speed-specific activity options
   const getActivityOptions = () => {
-    switch (userSpeed) {
-      case 1:
-        return [
-          {
-            id: 'lesson',
-            title: 'Start Lesson',
-            description: 'Learn step-by-step with visual guides',
-            icon: '📚',
-            color: 'from-blue-500 to-blue-600',
-            primary: true
-          },
-          {
-            id: 'quiz',
-            title: 'Take Quiz',
-            description: 'Test your knowledge with simple questions',
-            icon: '🧩',
-            color: 'from-green-500 to-green-600',
-            primary: false
-          },
-          {
-            id: 'flashcards',
-            title: 'Review Flashcards',
-            description: 'Quick review with visual cards',
-            icon: '🃏',
-            color: 'from-purple-500 to-purple-600',
-            primary: false
-          },
-          {
-            id: 'storybook',
-            title: 'View Storybook',
-            description: 'Read an AI-generated story',
-            icon: '📖',
-            color: 'from-yellow-500 to-yellow-600',
-            primary: false
-          },
-          {
-            id: 'playgame',
-            title: 'Play Game',
-            description: 'Play a simple game for this topic',
-            icon: '🎮',
-            color: 'from-pink-500 to-pink-600',
-            primary: false
-          }
-          // {
-          //   id: 'simulation',
-          //   title: 'Interactive Simulation',
-          //   description: 'Explore with hands-on experiments',
-          //   icon: '🔬',
-          //   color: 'from-indigo-500 to-indigo-600',
-          //   primary: false
-          // }
-        ]
-      case 2:
-        return [
-          {
-            id: 'lesson',
-            title: 'Start Lesson',
-            description: 'Interactive visual learning experience',
-            icon: '📚',
-            color: 'from-blue-500 to-blue-600',
-            primary: true
-          },
-          {
-            id: 'quiz',
-            title: 'Take Quiz',
-            description: 'Visual quiz with helpful hints',
-            icon: '🧩',
-            color: 'from-green-500 to-green-600',
-            primary: false
-          },
-          {
-            id: 'flashcards',
-            title: 'Review Flashcards',
-            description: 'Quick review with visual cards',
-            icon: '🃏',
-            color: 'from-purple-500 to-purple-600',
-            primary: false
-          },
-          {
-            id: 'playgame',
-            title: 'Play Game',
-            description: 'Play a simple game for this topic',
-            icon: '🎮',
-            color: 'from-pink-500 to-pink-600',
-            primary: false
-          }
-          // {
-          //   id: 'simulation',
-          //   title: 'Interactive Simulation',
-          //   description: 'Hands-on learning experiments',
-          //   icon: '🔬',
-          //   color: 'from-indigo-500 to-indigo-600',
-          //   primary: false
-          // }
-        ]
-      case 3:
-        return [
-          {
-            id: 'lesson',
-            title: 'Start Lesson',
-            description: 'Balanced interactive learning',
-            icon: '📚',
-            color: 'from-blue-500 to-blue-600',
-            primary: true
-          },
-          {
-            id: 'quiz',
-            title: 'Take Quiz',
-            description: 'Interactive knowledge testing',
-            icon: '🧩',
-            color: 'from-green-500 to-green-600',
-            primary: false
-          },
-          {
-            id: 'flashcards',
-            title: 'Review Flashcards',
-            description: 'Quick review with visual cards',
-            icon: '🃏',
-            color: 'from-purple-500 to-purple-600',
-            primary: false
-          },
-          {
-            id: 'playgame',
-            title: 'Play Game',
-            description: 'Play a simple game for this topic',
-            icon: '🎮',
-            color: 'from-pink-500 to-pink-600',
-            primary: false
-          }
-          // {
-          //   id: 'practice',
-          //   title: 'Practice Mode',
-          //   description: 'Hands-on activities and experiments',
-          //   icon: '🔬',
-          //   color: 'from-orange-500 to-orange-600',
-          //   primary: false
-          // },
-          // {
-          //   id: 'simulation',
-          //   title: 'Interactive Simulation',
-          //   description: 'Advanced interactive models',
-          //   icon: '🌐',
-          //   color: 'from-indigo-500 to-indigo-600',
-          //   primary: false
-          // }
-        ]
-      case 4:
-        return [
-          {
-            id: 'lesson',
-            title: 'Start Lesson',
-            description: 'Fast-paced comprehensive learning',
-            icon: '📚',
-            color: 'from-blue-500 to-blue-600',
-            primary: true
-          },
-          {
-            id: 'quiz',
-            title: 'Take Quiz',
-            description: 'Challenge your understanding',
-            icon: '🧩',
-            color: 'from-green-500 to-green-600',
-            primary: false
-          },
-          {
-            id: 'flashcards',
-            title: 'Review Flashcards',
-            description: 'Quick review with visual cards',
-            icon: '🃏',
-            color: 'from-purple-500 to-purple-600',
-            primary: false
-          },
-          {
-            id: 'playgame',
-            title: 'Play Game',
-            description: 'Play a simple game for this topic',
-            icon: '🎮',
-            color: 'from-pink-500 to-pink-600',
-            primary: false
-          }
-          // {
-          //   id: 'chat',
-          //   title: 'AI Discussion',
-          //   description: 'Deep dive with AI tutor',
-          //   icon: '💭',
-          //   color: 'from-cyan-500 to-cyan-600',
-          //   primary: false
-          // },
-          // {
-          //   id: 'simulation',
-          //   title: 'Interactive Simulation',
-          //   description: 'Complex scientific modeling',
-          //   icon: '🌐',
-          //   color: 'from-indigo-500 to-indigo-600',
-          //   primary: false
-          // },
-          // {
-          //   id: 'challenge',
-          //   title: 'Challenge Mode',
-          //   description: 'Advanced problem solving',
-          //   icon: '🎯',
-          //   color: 'from-red-500 to-red-600',
-          //   primary: false
-          // }
-        ]
-      case 5:
-        return [
-          {
-            id: 'lesson',
-            title: 'Explore Lesson',
-            description: 'Self-directed deep exploration',
-            icon: '📚',
-            color: 'from-blue-500 to-blue-600',
-            primary: true
-          },
-          {
-            id: 'quiz',
-            title: 'Advanced Quiz',
-            description: 'Complex multi-layered questions',
-            icon: '🧩',
-            color: 'from-green-500 to-green-600',
-            primary: false
-          },
-          {
-            id: 'flashcards',
-            title: 'Review Flashcards',
-            description: 'Quick review with visual cards',
-            icon: '🃏',
-            color: 'from-purple-500 to-purple-600',
-            primary: false
-          },
-          {
-            id: 'playgame',
-            title: 'Play Game',
-            description: 'Play a simple game for this topic',
-            icon: '🎮',
-            color: 'from-pink-500 to-pink-600',
-            primary: false
-          }
-          // {
-          //   id: 'simulation',
-          //   title: 'Interactive Simulation',
-          //   description: 'Advanced interactive models',
-          //   icon: '🌐',
-          //   color: 'from-indigo-500 to-indigo-600',
-          //   primary: false
-          // },
-          // {
-          //   id: 'research',
-          //   title: 'Research Mode',
-          //   description: 'Independent investigation',
-          //   icon: '🔍',
-          //   color: 'from-purple-500 to-purple-600',
-          //   primary: false
-          // }
-        ]
-      default:
-        return [
-          {
-            id: 'lesson',
-            title: 'Start Lesson',
-            description: 'Begin your learning journey',
-            icon: '📚',
-            color: 'from-blue-500 to-blue-600',
-            primary: true
-          },
-          {
-            id: 'quiz',
-            title: 'Take Quiz',
-            description: 'Test your knowledge',
-            icon: '🧩',
-            color: 'from-green-500 to-green-600',
-            primary: false
-          },
-          {
-            id: 'flashcards',
-            title: 'Review Flashcards',
-            description: 'Quick review with visual cards',
-            icon: '🃏',
-            color: 'from-purple-500 to-purple-600',
-            primary: false
-          },
-          {
-            id: 'playgame',
-            title: 'Play Game',
-            description: 'Play a simple game for this topic',
-            icon: '🎮',
-            color: 'from-pink-500 to-pink-600',
-            primary: false
-          }
-          // {
-          //   id: 'simulation',
-          //   title: 'Interactive Simulation',
-          //   description: 'Explore with hands-on experiments',
-          //   icon: '🔬',
-          //   color: 'from-indigo-500 to-indigo-600',
-          //   primary: false
-          // }
-        ]
+    // Base activities that are always available
+    const baseActivities = [
+      {
+        id: 'lesson',
+        title: 'Start Lesson',
+        description: 'Learn step-by-step with visual guides',
+        icon: '📚',
+        color: 'from-blue-500 to-blue-600',
+        primary: true
+      },
+      {
+        id: 'quiz',
+        title: 'Take Quiz',
+        description: 'Test your knowledge with simple questions',
+        icon: '🧩',
+        color: 'from-green-500 to-green-600',
+        primary: false
+      },
+      {
+        id: 'flashcards',
+        title: 'Review Flashcards',
+        description: 'Quick review with visual cards',
+        icon: '🃏',
+        color: 'from-purple-500 to-purple-600',
+        primary: false
+      }
+    ]
+
+    // Add storybook for all speeds
+    const activities = [...baseActivities]
+    activities.push({
+      id: 'storybook',
+      title: 'View Storybook',
+      description: 'Read an AI-generated story',
+      icon: '📖',
+      color: 'from-yellow-500 to-yellow-600',
+      primary: false
+    })
+
+    // Add play game only for water cycle topic
+    if (currentTopic?.id === 'water-cycle') {
+      activities.push({
+        id: 'playgame',
+        title: 'Play Game',
+        description: 'Play a simple game for this topic',
+        icon: '🎮',
+        color: 'from-pink-500 to-pink-600',
+        primary: false
+      })
     }
+
+    return activities
   }
 
   const activities = getActivityOptions()
