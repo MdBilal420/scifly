@@ -4,12 +4,13 @@ import UserMenu from '../components/UserMenu'
 // Lazy-load the heavy 3D scenes to keep initial bundle lean
 const WaterCycleQuest3D = lazy(() => import('../components/watercycle3d/WaterCycleQuest3D'))
 const HeatRayGame3D = lazy(() => import('../components/games/heatray3d/HeatRayGame3D'))
+const CloudCatcher3D = lazy(() => import('../components/games/cloudcatcher/CloudCatcher3D'))
 
 interface PlayGameScreenProps {
   onNavigate: (screen: string) => void
 }
 
-type GameType = 'menu' | '3d-quest' | 'heat-ray'
+type GameType = 'menu' | '3d-quest' | 'heat-ray' | 'cloud-catcher'
 
 const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
   const [gameType, setGameType] = useState<GameType>('menu')
@@ -40,7 +41,7 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
 
         {/* Game Selection */}
         <div className="flex-1 flex items-center justify-center p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl w-full">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl w-full">
             
             {/* Heat Ray Game */}
             <motion.div
@@ -69,6 +70,33 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
               </div>
             </motion.div>
 
+            {/* Cloud Catcher Game */}
+            <motion.div
+              className="bg-white/90 backdrop-blur rounded-3xl p-8 shadow-xl text-center cursor-pointer hover:shadow-2xl transition-all duration-300"
+              whileHover={{ scale: 1.02, y: -5 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={() => setGameType('cloud-catcher')}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <div className="text-6xl mb-4">☁️🌧️</div>
+              <h2 className="font-comic text-2xl font-bold text-cyan-600 mb-3">
+                Cloud Catcher
+              </h2>
+              <p className="text-gray-700 mb-4">
+                Move a cloud left and right to catch rising vapor! Grow the cloud until it bursts into rainfall to water the world below.
+              </p>
+              <div className="flex justify-center gap-2 mb-4">
+                <span className="bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm">☁️ Condensation</span>
+                <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">🌧️ Precipitation</span>
+                <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">⌨️ Keyboard</span>
+              </div>
+              <div className="text-sm text-gray-600">
+                <strong>Focus:</strong> Condensation + Precipitation • <strong>Age:</strong> 7-12 years • <strong>Duration:</strong> 5-15 min
+              </div>
+            </motion.div>
+
             {/* 3D Water Cycle Quest */}
             <motion.div
               className="bg-white/90 backdrop-blur rounded-3xl p-8 shadow-xl text-center cursor-pointer hover:shadow-2xl transition-all duration-300"
@@ -77,7 +105,7 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
               onClick={() => setGameType('3d-quest')}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
+              transition={{ delay: 0.3 }}
             >
               <div className="text-6xl mb-4">🌊🎮</div>
               <h2 className="font-comic text-2xl font-bold text-blue-600 mb-3">
@@ -108,12 +136,15 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
         >
           <div className="max-w-4xl mx-auto text-center">
             <h3 className="font-comic text-lg font-bold text-gray-800 mb-2">🎓 Learning Goals</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-700">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-700">
               <div>
-                <strong className="text-blue-700">Evaporation:</strong> How heat energy transforms water from liquid to gas
+                <strong className="text-yellow-700">Evaporation:</strong> How heat energy transforms water from liquid to gas
               </div>
               <div>
-                <strong className="text-green-700">Water Cycle:</strong> The continuous movement of water through Earth's systems
+                <strong className="text-cyan-700">Condensation:</strong> How cooling vapor forms droplets and creates clouds
+              </div>
+              <div>
+                <strong className="text-blue-700">Water Cycle:</strong> The continuous movement of water through Earth's systems
               </div>
               <div>
                 <strong className="text-purple-700">Science Skills:</strong> Observation, prediction, and cause-and-effect relationships
@@ -137,6 +168,7 @@ const PlayGameScreen: React.FC<PlayGameScreenProps> = ({ onNavigate }) => {
       }>
         {gameType === '3d-quest' && <WaterCycleQuest3D />}
         {gameType === 'heat-ray' && <HeatRayGame3D onBackToMenu={() => setGameType('menu')} />}
+        {gameType === 'cloud-catcher' && <CloudCatcher3D />}
       </Suspense>
       
       {/* Back button overlay for games */}
