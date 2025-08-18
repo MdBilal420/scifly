@@ -9,6 +9,12 @@ node_modules/
 .env.production.local
 .env.backup
 env.yaml
+env.local.yaml
+
+*.yaml
+agent/env.yaml
+agent/env.local.yaml
+
 
 # Cache files
 .eslintcache
