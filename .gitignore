@@ -29,6 +29,12 @@ node_modules/.cache/**/*
 
 *./langgraph_api
 
+# Environment files - ensure these are never committed
+agent/env.yaml
+agent/env.local.yaml
+agent/env.yaml.save
+agent/env.local.yaml.save
+
 
 build/
 **/build/
