@@ -62,7 +62,7 @@ const ChatScreen: React.FC<ChatScreenProps> = ({ onNavigate }) => {
         <div className="flex items-center gap-4">
           <motion.button
             className="bg-white/20 backdrop-blur rounded-full p-2"
-            onClick={() => onNavigate('home')}
+            onClick={() => onNavigate('topics')}
             whileHover={{ scale: 1.1 }}
             whileTap={{ scale: 0.9 }}
           >

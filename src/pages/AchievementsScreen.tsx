@@ -59,7 +59,7 @@ const AchievementsScreen: React.FC<AchievementsScreenProps> = ({ onNavigate }) =
           <div className="flex items-center gap-4">
             <motion.button
               className="bg-white/20 backdrop-blur rounded-full p-3"
-              onClick={() => onNavigate('home')}
+              onClick={() => onNavigate('topics')}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -90,7 +90,7 @@ const AchievementsScreen: React.FC<AchievementsScreenProps> = ({ onNavigate }) =
             </p>
             <motion.button
               className="bg-primary-500 text-white font-bold py-3 px-6 rounded-2xl"
-              onClick={() => onNavigate('home')}
+              onClick={() => onNavigate('topics')}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -110,15 +110,15 @@ const AchievementsScreen: React.FC<AchievementsScreenProps> = ({ onNavigate }) =
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
       >
-        <div className="flex items-center gap-4">
-          <motion.button
-            className="bg-white/20 backdrop-blur rounded-full p-3"
-            onClick={() => onNavigate('home')}
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-          >
-            <span className="text-white text-xl">←</span>
-          </motion.button>
+                  <div className="flex items-center gap-4">
+            <motion.button
+              className="bg-white/20 backdrop-blur rounded-full p-3"
+              onClick={() => onNavigate('topics')}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.9 }}
+            >
+              <span className="text-white text-xl">←</span>
+            </motion.button>
           
           <h1 className="font-comic text-2xl font-bold text-white">SciFly Achievements 🏆</h1>
         </div>

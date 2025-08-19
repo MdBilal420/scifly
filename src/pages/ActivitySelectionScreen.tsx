@@ -1,9 +1,9 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSelector } from '../hooks/redux'
 // import { getModesForSpeed } from '../config/learningModes'
 import PrimaryButton from '../components/PrimaryButton'
-import DynamicBackground from '../components/DynamicBackground'
+
 import UserMenu from '../components/UserMenu'
 import SimbaMascot from '../components/SimbaMascot'
 import { MdArrowBack } from 'react-icons/md'
@@ -15,11 +15,12 @@ interface ActivitySelectionScreenProps {
 const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNavigate }) => {
   const { currentTopic } = useAppSelector((state) => state.topics)
   const { currentUser } = useAppSelector((state) => state.user)
+  const [gradientVariant, setGradientVariant] = useState<string>('default')
 
   useEffect(() => {
     // Redirect if no topic selected
     if (!currentTopic) {
-      onNavigate('home')
+      onNavigate('topics')
     }
   }, [currentTopic, onNavigate])
 
@@ -29,6 +30,25 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
   }
 
   const userSpeed = currentUser?.learningSpeed || 3
+
+  // Activity gradient variants for background changes
+  const activityGradients: Record<string, string> = {
+    'lesson': 'lesson',
+    'quiz': 'quiz',
+    'ask-simba': 'chat',
+    'flashcards': 'cards',
+    'storybook': 'story',
+    'playgame': 'game'
+  }
+
+  const handleActivityHover = (activityId: string) => {
+    const variant = activityGradients[activityId] || 'default'
+    setGradientVariant(variant)
+  }
+
+  const handleActivityLeave = () => {
+    setGradientVariant('default')
+  }
 
   // Get speed-specific activity options
   const getActivityOptions = () => {
@@ -48,6 +68,14 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
         description: 'Test your knowledge with simple questions',
         icon: '🧩',
         color: 'from-green-500 to-green-600',
+        primary: false
+      },
+      {
+        id: 'ask-simba',
+        title: 'Ask Simba',
+        description: 'Chat with your AI science companion',
+        icon: '🦁',
+        color: 'from-orange-500 to-orange-600',
         primary: false
       },
       {
@@ -97,6 +125,9 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
       case 'quiz':
         onNavigate('quiz')
         break
+      case 'ask-simba':
+        onNavigate('chat')
+        break
       case 'flashcards':
         onNavigate('flashcards')
         break
@@ -141,9 +172,104 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
     }
   }
 
+  // Gradient variations based on topic theme and activity hover
+  const getBackgroundGradient = () => {
+    const baseTheme = currentTopic?.backgroundTheme || 'space'
+    
+    // Get base colors for the topic theme
+    const getThemeBaseColors = () => {
+      switch (baseTheme) {
+        case 'space':
+          return { primary: 'slate', secondary: 'blue', accent: 'indigo' }
+        case 'forest':
+          return { primary: 'green', secondary: 'emerald', accent: 'teal' }
+        case 'ocean':
+          return { primary: 'blue', secondary: 'cyan', accent: 'teal' }
+        case 'weather':
+          return { primary: 'gray', secondary: 'blue', accent: 'cyan' }
+        case 'laboratory':
+          return { primary: 'indigo', secondary: 'purple', accent: 'blue' }
+        case 'human-body':
+          return { primary: 'red', secondary: 'pink', accent: 'rose' }
+        case 'earth':
+          return { primary: 'amber', secondary: 'orange', accent: 'red' }
+        default:
+          return { primary: 'slate', secondary: 'blue', accent: 'indigo' }
+      }
+    }
+
+    const colors = getThemeBaseColors()
+    
+    // Create gradient variations based on activity
+    switch (gradientVariant) {
+      case 'lesson':
+        // Deeper, more focused variation
+        return `bg-gradient-to-br from-${colors.primary}-900 via-${colors.secondary}-900 to-${colors.accent}-900`
+      case 'quiz':
+        // Sharper, more contrasted variation
+        return `bg-gradient-to-br from-${colors.accent}-900 via-${colors.primary}-800 to-${colors.secondary}-900`
+      case 'chat':
+        // Warmer, more inviting variation
+        return `bg-gradient-to-br from-${colors.secondary}-900 via-${colors.accent}-800 to-${colors.primary}-800`
+      case 'cards':
+        // Flowing, memory-like variation
+        return `bg-gradient-to-br from-${colors.accent}-800 via-${colors.secondary}-900 to-${colors.primary}-900`
+      case 'story':
+        // Creative, imaginative variation
+        return `bg-gradient-to-br from-${colors.primary}-800 via-${colors.accent}-900 to-${colors.secondary}-800`
+      case 'game':
+        // Energetic, dynamic variation
+        return `bg-gradient-to-br from-${colors.secondary}-800 via-${colors.primary}-900 to-${colors.accent}-800`
+      default:
+        // Original topic theme gradient
+        switch (baseTheme) {
+          case 'space':
+            return 'bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900'
+          case 'forest':
+            return 'bg-gradient-to-br from-green-900 via-green-700 to-emerald-800'
+          case 'ocean':
+            return 'bg-gradient-to-br from-blue-900 via-cyan-700 to-teal-800'
+          case 'weather':
+            return 'bg-gradient-to-br from-gray-700 via-blue-600 to-cyan-500'
+          case 'laboratory':
+            return 'bg-gradient-to-br from-indigo-900 via-purple-800 to-blue-900'
+          case 'human-body':
+            return 'bg-gradient-to-br from-red-900 via-pink-800 to-rose-900'
+          case 'earth':
+            return 'bg-gradient-to-br from-amber-900 via-orange-800 to-red-900'
+          default:
+            return 'bg-gradient-to-br from-slate-900 via-slate-800 to-blue-900'
+        }
+    }
+  }
+
   return (
-    <DynamicBackground theme={currentTopic.backgroundTheme}>
-      <div className="min-h-screen p-4">
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Dynamic Gradient Background */}
+      <motion.div
+        key={gradientVariant}
+        className={`absolute inset-0 ${getBackgroundGradient()}`}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5 }}
+      />
+      
+      {/* Space decorations overlay */}
+      <div className="absolute inset-0">
+        <div className="absolute inset-0" style={{
+          backgroundImage: `
+            radial-gradient(2px 2px at 20% 30%, #fff, transparent),
+            radial-gradient(2px 2px at 40% 70%, rgba(255,255,255,0.8), transparent),
+            radial-gradient(1px 1px at 90% 40%, #fff, transparent),
+            radial-gradient(1px 1px at 60% 10%, #fff, transparent),
+            radial-gradient(2px 2px at 10% 80%, rgba(255,255,255,0.9), transparent)
+          `,
+          backgroundSize: '550px 400px, 350px 300px, 250px 200px, 150px 100px, 400px 350px'
+        }} />
+      </div>
+      
+      {/* Content */}
+      <div className="relative z-10 min-h-screen p-4">
         {/* Header */}
         <motion.header
           className="flex items-center justify-between mb-6"
@@ -153,7 +279,7 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
           <div className="flex items-center gap-4">
             <motion.button
               className="bg-white/20 backdrop-blur rounded-full p-3 text-white hover:bg-white/30 transition-all duration-300"
-              onClick={() => onNavigate('home')}
+              onClick={() => onNavigate('topics')}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
             >
@@ -187,7 +313,7 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
           <div className="flex items-center justify-center gap-4 text-white/60 text-sm">
             <span>⏱️ {currentTopic.estimatedTime} min</span>
             <span>•</span>
-            <span>📊 {currentTopic.difficulty === 1 ? 'Beginner' : currentTopic.difficulty === 2 ? 'Intermediate' : 'Advanced'}</span>
+            <span>📚 Grade 5 Curriculum</span>
             <span>•</span>
             <span>🚀 Speed {userSpeed}</span>
           </div>
@@ -195,48 +321,63 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
 
         {/* Activity Options */}
         <motion.div
-          className="max-w-4xl mx-auto"
+          className="max-w-6xl mx-auto"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {activities.map((activity, index) => (
               <motion.div
                 key={activity.id}
-                className={`relative bg-white/10 backdrop-blur rounded-3xl p-6 cursor-pointer transition-all duration-300 hover:bg-white/20 hover:scale-105 ${
-                  activity.primary ? 'ring-2 ring-white/30' : ''
+                className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 tilt-3d glass-3d ${
+                  activity.primary 
+                    ? 'border-yellow-400 bg-white/20 shadow-2xl ring-2 ring-yellow-400/50' 
+                    : 'border-white/20 bg-white/10 hover:bg-white/20'
                 }`}
                 onClick={() => handleActivitySelect(activity.id)}
-                initial={{ opacity: 0, y: 20 }}
+                onMouseEnter={() => handleActivityHover(activity.id)}
+                onMouseLeave={handleActivityLeave}
+                initial={{ opacity: 0, y: 50 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.5 + index * 0.1 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 {activity.primary && (
-                  <div className="absolute -top-2 -right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
-                    Recommended
-                  </div>
+                  <motion.div
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-yellow-500 rounded-full flex items-center justify-center shadow-lg"
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                  >
+                    <span className="text-white text-sm">⭐</span>
+                  </motion.div>
                 )}
                 
-                <div className="text-center mb-4">
-                  <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full bg-gradient-to-r ${activity.color} mb-3`}>
-                    <span className="text-2xl">{activity.icon}</span>
-                  </div>
-                  <h3 className="font-comic text-lg font-bold text-white mb-2">{activity.title}</h3>
-                  <p className="text-white/70 text-sm">{activity.description}</p>
-                </div>
-                
-                <div className="flex items-center justify-center">
-                  <PrimaryButton
-                    onClick={() => handleActivitySelect(activity.id)}
-                    size="sm"
-                    className="w-full"
+                {/* Activity Icon */}
+                <div className="text-center mb-3">
+                  <motion.div
+                    className="text-3xl mb-2"
+                    animate={activity.primary ? { rotate: [0, 5, -5, 0] } : {}}
+                    transition={{ duration: 0.5 }}
                   >
-                    {activity.primary ? 'Start Now' : 'Select'}
-                  </PrimaryButton>
+                    {activity.icon}
+                  </motion.div>
+                  <div className={`inline-block px-3 py-1 rounded-full text-xs font-bold text-white bg-gradient-to-r ${activity.color}`}>
+                    {activity.primary ? 'Recommended' : 'Activity'}
+                  </div>
                 </div>
+
+                {/* Activity Title */}
+                <h3 className="font-comic font-bold text-white text-lg mb-2 text-center">
+                  {activity.title}
+                </h3>
+
+                {/* Activity Description */}
+                <p className="text-white/80 text-sm text-center">
+                  {activity.description}
+                </p>
               </motion.div>
             ))}
           </div>
@@ -244,7 +385,7 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
 
         {/* Mascot */}
         <motion.div
-          className="fixed bottom-6 right-6 z-10"
+          className="fixed bottom-6 right-6 z-20"
           initial={{ opacity: 0, scale: 0 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ delay: 0.8 }}
@@ -252,7 +393,7 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
           <SimbaMascot size="md" animate={true} />
         </motion.div>
       </div>
-    </DynamicBackground>
+    </div>
   )
 }
 

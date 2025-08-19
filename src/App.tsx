@@ -4,6 +4,7 @@ import { store } from './store'
 import { useAppDispatch, useAppSelector } from './hooks/redux'
 import { loadCurrentUser, setupAuthListener } from './features/user/userSlice'
 import HomeScreen from './pages/HomeScreen'
+import TopicSelectionScreen from './pages/TopicSelectionScreen'
 import LessonScreen from './pages/LessonScreen'
 import QuizScreen from './pages/QuizScreen'
 import ChatScreen from './pages/ChatScreen'
@@ -16,10 +17,10 @@ import LandingPage from './pages/LandingPage'
 import UserOnboardingDialog from './components/UserOnboardingDialog'
 import PlayGameScreen from './pages/PlayGameScreen'
 
-type Screen = 'home' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity' | 'flashcards' | 'simulation' | 'storybook' | 'playgame'
+type Screen = 'home' | 'topics' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 'activity' | 'flashcards' | 'simulation' | 'storybook' | 'playgame'
 
 const AppContent: React.FC = () => {
-  const [currentScreen, setCurrentScreen] = useState<Screen>('home')
+  const [currentScreen, setCurrentScreen] = useState<Screen>('topics')
   const dispatch = useAppDispatch()
   const { isAuthenticated, isLoading } = useAppSelector((state) => state.user)
 
@@ -47,6 +48,8 @@ const AppContent: React.FC = () => {
 
   const renderScreen = () => {
     switch (currentScreen) {
+      case 'topics':
+        return <TopicSelectionScreen onNavigate={handleNavigate} />
       case 'home':
         return <HomeScreen onNavigate={handleNavigate} />
       case 'activity':
@@ -68,7 +71,7 @@ const AppContent: React.FC = () => {
       case 'playgame':
         return <PlayGameScreen onNavigate={handleNavigate} />
       default:
-        return <HomeScreen onNavigate={handleNavigate} />
+        return <TopicSelectionScreen onNavigate={handleNavigate} />
     }
   }
 
