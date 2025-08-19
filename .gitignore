@@ -31,3 +31,7 @@ build/
 **/pycache/
 **/__pycache__/
 
+# Environment files with sensitive data
+agent/env.local.yaml
+agent/.env
+agent/.env.local
