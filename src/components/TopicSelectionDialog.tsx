@@ -16,24 +16,7 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
   onTopicSelect 
 }) => {
   const [selectedTopic, setSelectedTopic] = useState<Topic | null>(null)
-  const [filterDifficulty, setFilterDifficulty] = useState<number | null>(null)
   const [previewTheme, setPreviewTheme] = useState<string>('space')
-
-  const filteredTopics = filterDifficulty 
-    ? topics.filter(topic => topic.difficulty === filterDifficulty)
-    : topics
-
-  const difficultyColors = {
-    1: 'bg-green-500',
-    2: 'bg-yellow-500', 
-    3: 'bg-red-500'
-  }
-
-  const difficultyLabels = {
-    1: 'Beginner',
-    2: 'Intermediate',
-    3: 'Advanced'
-  }
 
   const topicColors = {
     purple: 'from-purple-500 to-purple-700',
@@ -65,7 +48,6 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
 
   const handleClose = () => {
     setSelectedTopic(null)
-    setFilterDifficulty(null)
     setPreviewTheme('space')
     onClose()
   }
@@ -162,7 +144,7 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                     <SimbaMascot size="sm" animate={true} />
                     <div>
                       <h2 className="text-white font-comic text-2xl font-bold">Choose Your Adventure! 🚀</h2>
-                      <p className="text-white/80 text-sm">Select a science topic to explore</p>
+                      <p className="text-white/80 text-sm">Grade 5 Science Curriculum</p>
                     </div>
                   </div>
                   
@@ -176,50 +158,17 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                   </motion.button>
                 </div>
 
-                {/* Difficulty Filter */}
-                <motion.div
-                  className="flex justify-center gap-2 mb-6"
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                >
-                  <motion.button
-                    className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 tilt-3d ${
-                      filterDifficulty === null 
-                        ? 'bg-white text-gray-800 shadow-lg' 
-                        : 'bg-white/20 text-white glass-3d'
-                    }`}
-                    onClick={() => setFilterDifficulty(null)}
-                    whileHover={{ scale: 1.05 }}
-                  >
-                    All Topics
-                  </motion.button>
-                  {[1, 2, 3].map(level => (
-                    <motion.button
-                      key={level}
-                      className={`px-4 py-2 rounded-xl font-medium transition-all duration-300 tilt-3d flex items-center gap-2 ${
-                        filterDifficulty === level 
-                          ? 'bg-white text-gray-800 shadow-lg' 
-                          : 'bg-white/20 text-white glass-3d'
-                      }`}
-                      onClick={() => setFilterDifficulty(level)}
-                      whileHover={{ scale: 1.05 }}
-                    >
-                      <div className={`w-3 h-3 rounded-full ${difficultyColors[level as keyof typeof difficultyColors]}`} />
-                      {difficultyLabels[level as keyof typeof difficultyLabels]}
-                    </motion.button>
-                  ))}
-                </motion.div>
+
 
                 {/* Topics Grid */}
                 <motion.div
                   className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6"
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3, staggerChildren: 0.1 }}
+                  transition={{ delay: 0.2, staggerChildren: 0.1 }}
                 >
                   <AnimatePresence>
-                    {filteredTopics.map((topic, index) => (
+                    {topics.map((topic, index) => (
                       <motion.div
                         key={topic.id}
                         className={`relative p-4 rounded-2xl border-2 cursor-pointer transition-all duration-300 tilt-3d glass-3d ${
@@ -252,17 +201,9 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                         </div>
 
                         {/* Topic Title */}
-                        <h3 className="font-comic font-bold text-white text-sm mb-2 text-center">
+                        <h3 className="font-comic font-bold text-white text-sm mb-3 text-center">
                           {topic.title}
                         </h3>
-
-                        {/* Difficulty Indicator */}
-                        <div className="flex items-center justify-center gap-2 mb-3">
-                          <div className={`w-2 h-2 rounded-full ${difficultyColors[topic.difficulty]}`} />
-                          <span className="text-white/70 text-xs">
-                            {difficultyLabels[topic.difficulty]}
-                          </span>
-                        </div>
 
                         {/* Key Learning Points */}
                         <div className="space-y-1 mb-3">
@@ -324,11 +265,11 @@ const TopicSelectionDialog: React.FC<TopicSelectionDialogProps> = ({
                     className="flex items-start gap-3 justify-center"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.5 }}
+                    transition={{ delay: 0.4 }}
                   >
-                    <div className="chat-bubble max-w-xs">
+                    <div className="chat-bubble max-w-sm">
                       <p className="text-gray-700 text-sm text-center">
-                        Pick any topic that interests you! Every science adventure is mane-ificent! 🦁
+                        These topics are perfect for Grade 5 students! Pick any science topic that sparks your curiosity - every adventure is mane-ificent! 🦁✨
                       </p>
                     </div>
                   </motion.div>

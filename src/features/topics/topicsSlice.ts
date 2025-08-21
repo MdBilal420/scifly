@@ -43,7 +43,8 @@ function mapDatabaseTopicToTopic(dbTopic: DatabaseTopic): Topic {
     backgroundTheme: dbTopic.background_theme as 'space' | 'forest' | 'ocean' | 'weather' | 'laboratory' | 'human-body' | 'earth',
     difficulty: dbTopic.difficulty as 1 | 2 | 3,
     estimatedTime: dbTopic.estimated_time_minutes,
-    keyLearningPoints: dbTopic.key_learning_points
+    keyLearningPoints: dbTopic.key_learning_points,
+    image: dbTopic.image
   }
 }
 

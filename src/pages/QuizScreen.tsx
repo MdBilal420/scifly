@@ -183,7 +183,7 @@ const QuizScreen: React.FC<QuizScreenProps> = ({ onNavigate }) => {
               </PrimaryButton>
               
               <PrimaryButton
-                onClick={() => onNavigate('home')}
+                onClick={() => onNavigate('topics')}
                 className="w-full"
                 icon="🏠"
               >

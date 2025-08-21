@@ -228,7 +228,7 @@ const SimulationScreen: React.FC<SimulationScreenProps> = ({ onNavigate }) => {
                 </PrimaryButton>
                 
                 <button
-                  onClick={() => onNavigate('home')}
+                  onClick={() => onNavigate('topics')}
                   className="text-gray-500 text-sm underline w-full text-center"
                 >
                   Go Home

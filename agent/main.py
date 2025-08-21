@@ -27,9 +27,14 @@ app = FastAPI(
 ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:3001",
+    "http://127.0.0.1:3000",
+    "http://127.0.0.1:3001",
+    "http://localhost:8080",
+    "http://127.0.0.1:8080",
     "https://your-frontend-domain.com",  # Update with your actual domain
     "https://scifly.web.app",  # If using Firebase Hosting
     "https://scifly.firebaseapp.com",  # If using Firebase Hosting
+    "*",  # Allow all origins for development (remove in production)
 ]
 
 app.add_middleware(
@@ -83,14 +88,44 @@ class StorybookRequest(BaseModel):
 def generate_storybook_endpoint(request: StorybookRequest):
     """Endpoint to generate a storybook."""
     try:
-        # Your storybook generation logic here
-        # This is a placeholder - implement your actual logic
-        return {
-            "success": True,
-            "storybook": f"Generated storybook for: {request.prompt}"
-        }
+
+        print("DEBUG: Generate storybook endpoint called with prompt: ", request.prompt)
+
+        import google.genai as genai
+        from google.genai.types import GenerateContentConfig
+        import base64
+        
+        LOCATION = "global"
+        client = genai.Client(vertexai=True, project="bookingagent-466314", location=LOCATION)
+        MODEL_ID = "gemini-2.0-flash-preview-image-generation"
+        
+        response = client.models.generate_content(
+            model=MODEL_ID,
+            contents=request.prompt,
+            config=GenerateContentConfig(
+                response_modalities=["TEXT", "IMAGE"],
+                candidate_count=1,
+                safety_settings=[
+                    {"method": "PROBABILITY"},
+                    {"category": "HARM_CATEGORY_DANGEROUS_CONTENT"},
+                    {"threshold": "BLOCK_MEDIUM_AND_ABOVE"},
+                ],
+            ),
+        )
+        
+        content_parts = []
+        for part in response.candidates[0].content.parts:
+            if part.text:
+                content_parts.append({"type": "text", "data": part.text})
+            if part.inline_data:
+                encoded_image = base64.b64encode(part.inline_data.data).decode("utf-8")
+                content_parts.append({"type": "image", "data": encoded_image, "mime_type": part.inline_data.mime_type})
+        
+        return {"success": True, "storybook": content_parts}
     except Exception as e:
         print(f"Error generating storybook: {e}")
+        import traceback
+        traceback.print_exc()
         return {"success": False, "error": str(e)}
 
 # Health check endpoint
