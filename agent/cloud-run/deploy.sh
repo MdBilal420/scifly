@@ -6,8 +6,8 @@
 set -e
 
 # Configuration
-PROJECT_ID=${1:-"your-project-id"}  # Replace with your actual project ID
-SERVICE_NAME=${2:-"scifly-api"}
+PROJECT_ID=${1:-"bookingagent-466314"}  # Replace with your actual project ID
+SERVICE_NAME=${2:-"scifly-api-demo"}
 REGION=${3:-"us-central1"}
 IMAGE_NAME="gcr.io/${PROJECT_ID}/${SERVICE_NAME}"
 
