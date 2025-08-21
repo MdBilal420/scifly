@@ -25,6 +25,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
   const { currentTopic, lessonContent, isGeneratingContent, contentError } = useAppSelector((state) => state.topics)
   const { currentUser } = useAppSelector((state) => state.user)
 
+
   useEffect(() => {
     if (currentTopic) {
       dispatch(generateLessonContent(currentTopic))
@@ -220,17 +221,18 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
             transition={{ duration: 0.3 }}
               className="h-full p-3 sm:p-4"
             >
-              {userSpeed === 1 && (
+              {(userSpeed === 1 || userSpeed === 2 || userSpeed === 3 || userSpeed === 4 || userSpeed === 5) && (
                 <Speed1Layout 
                   currentContent={currentContent}
                   onNext={handleNext}
                   onPrevious={handlePrevious}
                   currentSection={currentSection}
                   totalSections={lessonContent.length}
+                  currentTopic={currentTopic}
                 />
               )}
               
-              {userSpeed === 2 && (
+              {/* {userSpeed === 2 && (
                 <Speed2Layout 
                   currentContent={currentContent}
                   onNext={handleNext}
@@ -268,7 +270,7 @@ const LessonScreen: React.FC<LessonScreenProps> = ({ onNavigate }) => {
                   currentSection={currentSection}
                   totalSections={lessonContent.length}
                 />
-              )}
+              )} */}
           </motion.div>
         </AnimatePresence>
       </div>

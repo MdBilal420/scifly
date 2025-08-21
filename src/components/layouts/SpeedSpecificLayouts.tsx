@@ -1,6 +1,7 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { MdArrowBack, MdArrowForward } from 'react-icons/md'
+import { Topic } from '../../data/topics'
 
 // Helper functions to properly render icons with TypeScript compatibility
 const BackIcon = () => (MdArrowBack as any)({ style: { display: 'inline', marginRight: '0.5rem' } })
@@ -19,6 +20,7 @@ interface SpeedLayoutProps {
   onPrevious: () => void
   currentSection: number
   totalSections: number
+  currentTopic: Topic
 }
 
 // Speed 1 (🐢): Re-designed for Grade 5 UX
@@ -27,14 +29,18 @@ export const Speed1Layout: React.FC<SpeedLayoutProps> = ({
   onNext, 
   onPrevious, 
   currentSection, 
-  totalSections 
+  totalSections,
+  currentTopic
 }) => {
+
+  console.log("currentTopic", currentTopic)
+
   return (
     <div className="h-full grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-transparent rounded-3xl">
       {/* Left Column: Image only */}
       <div className="flex items-center justify-center overflow-hidden min-h-0">
         <motion.img 
-          src="https://czdtrrxwoonaryalnkbc.supabase.co/storage/v1/object/sign/scifly-lessons-diagram/photosynthesis.png?token=eyJraWQiOiJzdG9yYWdlLXVybC1zaWduaW5nLWtleV8zZTQzZjY0ZC1mOTQ2LTQwZTktOGQzMC1lZGY4NWZiZjNjOGQiLCJhbGciOiJIUzI1NiJ9.eyJ1cmwiOiJzY2lmbHktbGVzc29ucy1kaWFncmFtL3Bob3Rvc3ludGhlc2lzLnBuZyIsImlhdCI6MTc1MjIxNTQ4MiwiZXhwIjoxNzgzNzUxNDgyfQ.iNB3njt5EWASJEWOlFqsQORKvd78TAipCwOO6RVpUEk" 
+          src={currentTopic?.image}
           alt={currentContent?.title || 'Lesson Image'} 
           className="max-w-full h-auto max-h-[66vh] object-contain rounded-2xl shadow-lg"
           initial={{ opacity: 0, scale: 0.9 }}

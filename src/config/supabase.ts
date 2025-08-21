@@ -75,6 +75,7 @@ export interface DatabaseTopic {
   is_active: boolean
   created_at: string
   updated_at: string
+  image: string
 }
 
 export interface UserProgress {
