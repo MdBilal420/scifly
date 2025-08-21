@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
 import { useAppSelector } from '../hooks/redux'
 // import { getModesForSpeed } from '../config/learningModes'
-import PrimaryButton from '../components/PrimaryButton'
+//import PrimaryButton from '../components/PrimaryButton'
 
 import UserMenu from '../components/UserMenu'
 import SimbaMascot from '../components/SimbaMascot'

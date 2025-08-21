@@ -10,7 +10,9 @@ import DynamicBackground from '../components/DynamicBackground'
 import UserMenu from '../components/UserMenu'
 import { MdArrowBack } from 'react-icons/md'
 
-import { Speed1Layout, Speed2Layout, Speed3Layout, Speed4Layout, Speed5Layout } from '../components/layouts/SpeedSpecificLayouts'
+import { Speed1Layout, 
+  // Speed2Layout, Speed3Layout, Speed4Layout, Speed5Layout 
+} from '../components/layouts/SpeedSpecificLayouts'
 // Import adaptive styles to ensure they're loaded
 import '../styles/adaptiveComponents.css'
 
