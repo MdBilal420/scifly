@@ -51,7 +51,6 @@ gcloud auth configure-docker
 
 # Build the Docker image
 echo -e "${YELLOW}🏗️  Building Docker image...${NC}"
-cd ..
 docker build --platform linux/amd64 -t ${IMAGE_NAME} .
 
 # Push the image to Google Container Registry
