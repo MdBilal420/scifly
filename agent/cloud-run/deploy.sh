@@ -51,8 +51,8 @@ gcloud auth configure-docker
 
 # Build the Docker image
 echo -e "${YELLOW}🏗️  Building Docker image...${NC}"
-cd ../agent
-docker build -t ${IMAGE_NAME} .
+cd ..
+docker build --platform linux/amd64 -t ${IMAGE_NAME} .
 
 # Push the image to Google Container Registry
 echo -e "${YELLOW}📤 Pushing image to Google Container Registry...${NC}"
@@ -72,8 +72,7 @@ gcloud run deploy ${SERVICE_NAME} \
     --min-instances 0 \
     --timeout 300 \
     --concurrency 80 \
-    --set-env-vars="PYTHONPATH=/app" \
-    --set-env-vars="PORT=8080"
+    --set-env-vars="PYTHONPATH=/app"
 
 # Get the service URL
 SERVICE_URL=$(gcloud run services describe ${SERVICE_NAME} --region=${REGION} --format='value(status.url)')
