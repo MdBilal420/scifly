@@ -95,8 +95,13 @@ export const authAPI = {
 
   // Sign out current user
   async signOut() {
+    console.log('authAPI.signOut: Starting Supabase sign out...')
     const { error } = await supabase.auth.signOut()
-    if (error) throw error
+    if (error) {
+      console.error('authAPI.signOut: Supabase sign out error:', error)
+      throw error
+    }
+    console.log('authAPI.signOut: Supabase sign out successful')
   },
 
   // Get current user session

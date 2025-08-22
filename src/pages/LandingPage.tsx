@@ -1,5 +1,8 @@
 import React, { useState } from 'react'
 import { motion } from 'framer-motion'
+import { useAppDispatch } from '../hooks/redux'
+import { signInUser } from '../features/user/userSlice'
+import { useClarity } from '../hooks/useClarity'
 import SimbaMascot from '../components/SimbaMascot'
 import PrimaryButton from '../components/PrimaryButton'
 import SpaceDecorations from '../components/SpaceDecorations'
@@ -8,6 +11,9 @@ import AuthDialog from '../components/AuthDialog'
 const LandingPage: React.FC = () => {
   const [showAuthDialog, setShowAuthDialog] = useState(false)
   const [authMode, setAuthMode] = useState<'signup' | 'signin'>('signup')
+  const [isTestLoggingIn, setIsTestLoggingIn] = useState(false)
+  const dispatch = useAppDispatch()
+  const { trackEvent } = useClarity()
 
   const handleSignUp = () => {
     setAuthMode('signup')
@@ -17,6 +23,41 @@ const LandingPage: React.FC = () => {
   const handleSignIn = () => {
     setAuthMode('signin')
     setShowAuthDialog(true)
+  }
+
+  const handleTestLogin = async () => {
+    setIsTestLoggingIn(true)
+    
+    // Track test login attempt
+    trackEvent('test_account_login_attempted', {
+      email: 'elevel@scifly.com'
+    })
+    
+    try {
+      console.log('Attempting test login with elevel@scifly.com...')
+      await dispatch(signInUser({ 
+        email: 'elevel@scifly.com', 
+        password: 'scifly' 
+      })).unwrap()
+      console.log('Test login successful!')
+      
+      // Track successful test login
+      trackEvent('test_account_login_successful', {
+        email: 'elevel@scifly.com'
+      })
+    } catch (error) {
+      console.error('Test login failed:', error)
+      
+      // Track failed test login
+      trackEvent('test_account_login_failed', {
+        email: 'elevel@scifly.com',
+        error: error instanceof Error ? error.message : 'Unknown error'
+      })
+      
+      alert('Test login failed. Please check if the test account exists.')
+    } finally {
+      setIsTestLoggingIn(false)
+    }
   }
 
   const features = [
@@ -64,6 +105,15 @@ const LandingPage: React.FC = () => {
         </div>
         
         <div className="flex gap-3">
+          <motion.button
+            onClick={handleTestLogin}
+            disabled={isTestLoggingIn}
+            className="text-yellow-300 hover:text-yellow-200 transition-colors font-medium text-sm border border-yellow-300/30 hover:border-yellow-300/60 rounded-lg px-3 py-1"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            {isTestLoggingIn ? '🔄 Logging in...' : '🧪 Test Account'}
+          </motion.button>
           <motion.button
             onClick={handleSignIn}
             className="text-white hover:text-primary-200 transition-colors font-medium"
@@ -129,6 +179,27 @@ const LandingPage: React.FC = () => {
                 I Already Have an Account
               </motion.button>
             </div>
+            
+            {/* Test Account Button */}
+            <motion.div
+              className="mt-6"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: 0.6 }}
+            >
+              <motion.button
+                onClick={handleTestLogin}
+                disabled={isTestLoggingIn}
+                className="bg-gradient-to-r from-yellow-400/20 to-orange-400/20 border-2 border-yellow-400/40 hover:border-yellow-400/60 text-yellow-300 hover:text-yellow-200 rounded-2xl px-6 py-3 font-bold transition-all backdrop-blur"
+                whileHover={{ scale: 1.05, backgroundColor: 'rgba(255, 193, 7, 0.3)' }}
+                whileTap={{ scale: 0.95 }}
+              >
+                {isTestLoggingIn ? '🔄 Logging in...' : '🧪 Try Test Account (elevel@scifly.com)'}
+              </motion.button>
+              <p className="text-yellow-300/70 text-sm mt-2">
+                Quick demo with pre-configured account
+              </p>
+            </motion.div>
           </motion.div>
 
           {/* Demo Preview */}

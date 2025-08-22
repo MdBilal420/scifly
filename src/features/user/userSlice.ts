@@ -232,9 +232,12 @@ export const signOutUser = createAsyncThunk(
   'user/signOutUser',
   async (_, { rejectWithValue }) => {
     try {
+      console.log('signOutUser thunk: Starting sign out process...')
       await authAPI.signOut()
+      console.log('signOutUser thunk: Supabase sign out successful')
       return null
     } catch (error: any) {
+      console.error('signOutUser thunk: Error during sign out:', error)
       return rejectWithValue(error.message || 'Failed to sign out')
     }
   }
@@ -589,12 +592,29 @@ const userSlice = createSlice({
     // Sign out user
     builder
       .addCase(signOutUser.fulfilled, (state) => {
+        console.log('signOutUser.fulfilled reducer: Clearing user state...')
+        
+        // Track sign out event with Clarity before clearing state
+        if (typeof window !== 'undefined' && typeof window.clarity === 'function' && state.currentUser) {
+          window.clarity('event', 'user_signed_out', {
+            userId: state.currentUser.id,
+            learningSpeed: state.currentUser.learningSpeed
+          })
+        }
+        
         state.currentUser = null
         state.authUser = null
         state.isAuthenticated = false
         state.isOnboarded = false
         state.showOnboarding = true
         state.error = null
+        // Clear localStorage to prevent fallback to local user
+        localStorage.removeItem('scifly_user')
+        localStorage.removeItem('scifly_onboarded')
+        console.log('signOutUser.fulfilled reducer: User state cleared successfully')
+      })
+      .addCase(signOutUser.rejected, (state, action) => {
+        state.error = action.payload as string
       })
 
     // Load current user

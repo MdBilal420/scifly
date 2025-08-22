@@ -268,32 +268,33 @@ const ActivitySelectionScreen: React.FC<ActivitySelectionScreenProps> = ({ onNav
         }} />
       </div>
       
-      {/* Content */}
-      <div className="relative z-10 min-h-screen p-4">
-        {/* Header */}
-        <motion.header
-          className="flex items-center justify-between mb-6"
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-        >
-          <div className="flex items-center gap-4">
-            <motion.button
-              className="bg-white/20 backdrop-blur rounded-full p-3 text-white hover:bg-white/30 transition-all duration-300"
-              onClick={() => onNavigate('topics')}
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {(MdArrowBack as any)({ style: { display: 'inline', fontSize: '20px' } })}
-            </motion.button>
-            
-            <div>
-              <h1 className="font-comic text-2xl font-bold text-white">Choose Your Activity</h1>
-              <p className="text-white/80 text-sm">{getSpeedDescription()}</p>
-            </div>
-          </div>
+      {/* Header - Fixed positioning to avoid z-index issues */}
+      <motion.header
+        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between p-4"
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+      >
+        <div className="flex items-center gap-4">
+          <motion.button
+            className="bg-white/20 backdrop-blur rounded-full p-3 text-white hover:bg-white/30 transition-all duration-300"
+            onClick={() => onNavigate('topics')}
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+          >
+            {(MdArrowBack as any)({ style: { display: 'inline', fontSize: '20px' } })}
+          </motion.button>
           
-          <UserMenu />
-        </motion.header>
+          <div>
+            <h1 className="font-comic text-2xl font-bold text-white">Choose Your Activity</h1>
+            <p className="text-white/80 text-sm">{getSpeedDescription()}</p>
+          </div>
+        </div>
+        
+        <UserMenu />
+      </motion.header>
+
+      {/* Content */}
+      <div className="relative z-10 min-h-screen p-4 pt-24">
 
         {/* Topic Info */}
         <motion.div
