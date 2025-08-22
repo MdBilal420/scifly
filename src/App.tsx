@@ -3,6 +3,7 @@ import { Provider } from 'react-redux'
 import { store } from './store'
 import { useAppDispatch, useAppSelector } from './hooks/redux'
 import { loadCurrentUser, setupAuthListener } from './features/user/userSlice'
+import { useClarity, clarityEvents } from './hooks/useClarity'
 import HomeScreen from './pages/HomeScreen'
 import TopicSelectionScreen from './pages/TopicSelectionScreen'
 import LessonScreen from './pages/LessonScreen'
@@ -22,7 +23,8 @@ type Screen = 'home' | 'topics' | 'lesson' | 'quiz' | 'chat' | 'achievements' | 
 const AppContent: React.FC = () => {
   const [currentScreen, setCurrentScreen] = useState<Screen>('topics')
   const dispatch = useAppDispatch()
-  const { isAuthenticated, isLoading } = useAppSelector((state) => state.user)
+  const { isAuthenticated, isLoading, currentUser } = useAppSelector((state) => state.user)
+  const { trackEvent, setUserId, setUserProperties } = useClarity()
 
   // Load user data and setup auth listener on app initialization
   useEffect(() => {
@@ -41,6 +43,37 @@ const AppContent: React.FC = () => {
       }
     }
   }, [dispatch])
+
+  // Reset screen to topics when user logs out
+  useEffect(() => {
+    console.log('App: Auth state changed - isAuthenticated:', isAuthenticated, 'currentUser:', !!currentUser)
+    if (!isAuthenticated && !currentUser) {
+      console.log('App: User logged out, resetting screen to topics')
+      setCurrentScreen('topics')
+    }
+  }, [isAuthenticated, currentUser])
+
+  // Track user authentication events with Clarity
+  useEffect(() => {
+    if (currentUser) {
+      // Set user ID for Clarity tracking
+      setUserId(currentUser.id)
+      
+      // Set user properties
+      setUserProperties({
+        name: currentUser.name,
+        learningSpeed: currentUser.learningSpeed,
+        joinedAt: currentUser.joinedAt,
+        avatar: currentUser.avatar
+      })
+      
+      // Track sign in event
+      trackEvent(clarityEvents.USER_SIGNED_IN, {
+        userId: currentUser.id,
+        learningSpeed: currentUser.learningSpeed
+      })
+    }
+  }, [currentUser, setUserId, setUserProperties, trackEvent])
 
   const handleNavigate = (screen: string) => {
     setCurrentScreen(screen as Screen)

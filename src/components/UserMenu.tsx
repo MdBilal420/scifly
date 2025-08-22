@@ -11,10 +11,24 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
   const [isOpen, setIsOpen] = useState(false)
   const dispatch = useAppDispatch()
   const { currentUser } = useAppSelector((state) => state.user)
+  
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    console.log("handleLogout called")
+
     if (window.confirm(`Sign out of SciFly? You'll need to sign in again to continue your learning journey.`)) {
-      dispatch(signOutUser())
+      console.log("User confirmed logout")
+      try {
+        console.log("Dispatching signOutUser action...")
+        const result = await dispatch(signOutUser()).unwrap()
+        console.log("Logout successful, result:", result)
+        // The App component will handle navigation to landing page
+      } catch (error) {
+        console.error("Logout failed:", error)
+        alert("Failed to sign out. Please try again.")
+      }
+    } else {
+      console.log("User cancelled logout")
     }
     setIsOpen(false)
   }
@@ -74,7 +88,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
 
                 {/* Menu Items */}
                 <div className="py-1">
-                  <button
+                  {/* <button
                     className="w-full flex items-center gap-3 px-3 py-2 text-left text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                     onClick={() => setIsOpen(false)}
                   >
@@ -90,10 +104,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ className = '' }) => {
                     <span className="text-sm">Settings</span>
                   </button>
                   
-                  <hr className="my-1 border-gray-200" />
+                  <hr className="my-1 border-gray-200" /> */}
                   
                   <button
-                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    className="w-full flex items-center gap-3 px-3 py-2 text-left text-red-600 cursor-pointer hover:bg-red-50 rounded-lg transition-colors"
                     onClick={handleLogout}
                   >
                     <span className="text-lg">🚪</span>
